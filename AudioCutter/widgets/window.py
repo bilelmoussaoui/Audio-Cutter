@@ -23,7 +23,7 @@ from gettext import gettext as _
 from .actionbar import ActionBar
 from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
-from ..modules import Logger, Settings
+from ..modules import Logger, Player, Settings
 from ..const import AUDIO_MIMES
 from ..utils import show_app_menu
 
@@ -43,6 +43,8 @@ class Window(Gtk.ApplicationWindow):
         self._setup_window()
         self._setup_widgets()
         self._restore_state()
+        Player.get_default().connect("playing", self._on_play)
+        Player.get_default().connect("paused", self._on_paused)
 
     @staticmethod
     def get_default():
@@ -62,6 +64,7 @@ class Window(Gtk.ApplicationWindow):
         # Headerbar
         headerbar = HeaderBar.get_default()
         headerbar.connect("open-file", self._open_file)
+        headerbar.play_btn.connect("clicked", self._play)
         # Set up the app menu in other DE than GNOME
         if not show_app_menu():
             from ..application import Application
@@ -83,6 +86,19 @@ class Window(Gtk.ApplicationWindow):
         # Config Box
         sound_config = SoundConfig.get_default()
         self._main.pack_end(sound_config, False, False, 0)
+
+    def _on_play(self, player):
+        HeaderBar.get_default().set_is_playing(True)
+
+    def _on_paused(self, player):
+        HeaderBar.get_default().set_is_playing(False)
+
+    def _play(self, *args):
+        player = Player.get_default()
+        if player.is_playing:
+            player.pause()
+        else:
+            player.play()
 
     def _open_file(self, *args):
         """Open an open file dialog to select an audio file."""
@@ -112,6 +128,7 @@ class Window(Gtk.ApplicationWindow):
     @staticmethod
     def _set_open_file(filepath):
         """Set a filename as opened."""
+        Player.get_default().set_open_file(filepath)
         HeaderBar.get_default().set_open_file(filepath)
         ActionBar.get_default().set_state(True)
         SoundConfig.get_default().set_state(True)

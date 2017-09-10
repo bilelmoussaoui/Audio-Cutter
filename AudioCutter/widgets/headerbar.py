@@ -39,7 +39,7 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
     def __init__(self):
         GObject.GObject.__init__(self)
         Gtk.HeaderBar.__init__(self)
-        self._play_btn = Gtk.Button()
+        self.play_btn = Gtk.Button()
         self._open_btn = Gtk.Button()
         self.menu_btn = Gtk.Button()
         self.set_title(_("Audio Cutter"))
@@ -68,11 +68,9 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         self.pack_end(self.menu_btn)
 
         # Play Button
-        play_icn = Gio.ThemedIcon(name="media-playback-start-symbolic")
-        play_img = Gtk.Image.new_from_gicon(play_icn, Gtk.IconSize.BUTTON)
-        self._play_btn.set_image(play_img)
-        self._play_btn.set_sensitive(False)
-        self.pack_start(self._play_btn)
+        self.set_is_playing(False)
+        self.play_btn.set_sensitive(False)
+        self.pack_start(self.play_btn)
 
     def _open_file(self, *args):
         """Send a open-file signal to the Main Window."""
@@ -85,5 +83,19 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         Also makes the play button sensitive
         """
         self.set_subtitle(filename)
-        self._play_btn.set_sensitive(True)
+        self.play_btn.set_sensitive(True)
         self.set_has_subtitle(True)
+
+    def set_is_playing(self, is_playing):
+        """Set the play button info depending on the player status."""
+        if not is_playing:
+            tooltip = _("Play")
+            icon_name = "media-playback-start-symbolic"
+        else:
+            tooltip = _("Pause")
+            icon_name = "media-playback-pause-symbolic"
+        icon = Gio.ThemedIcon(name=icon_name)
+        image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
+        self.play_btn.set_image(image)
+        self.play_btn.set_tooltip_text(tooltip)
+
