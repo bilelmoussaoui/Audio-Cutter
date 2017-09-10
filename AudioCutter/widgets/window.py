@@ -20,8 +20,8 @@ along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 
 from os import path
 from gettext import gettext as _
-from .headerbar import HeaderBar
 from .actionbar import ActionBar
+from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
 from ..modules import Logger, Settings
 from ..const import AUDIO_MIMES
@@ -73,32 +73,33 @@ class Window(Gtk.ApplicationWindow):
         sound_config = SoundConfig.get_default()
         self._main.pack_end(sound_config, False, False, 0)
 
-
     def _open_file(self, *args):
         """Open an open file dialog to select an audio file."""
         dialog = Gtk.FileChooserDialog(_("Please choose an audio file"),
                                        self, Gtk.FileChooserAction.OPEN,
-                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        self._add_filters(dialog)
+                                       ("_Cancel", Gtk.ResponseType.CANCEL,
+                                        "_Open", Gtk.ResponseType.OK))
+        Window._add_filters(dialog)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             opened_file = dialog.get_filename()
-            self._set_open_file(opened_file)
+            Window._set_open_file(opened_file)
             Logger.debug("File Selected {}".format(opened_file))
         else:
             Logger.debug("Open file dialog closed without selecting a file.")
         dialog.destroy()
 
-    def _add_filters(self, dialog):
+    @staticmethod
+    def _add_filters(dialog):
         """Add audio filters to the open file dialog."""
         filters = Gtk.FileFilter()
         filters.set_name(_("Audio Files"))
-        for mimetype in AUDIO_MIMES.keys():
+        for mimetype in AUDIO_MIMES:
             filters.add_mime_type(mimetype)
         dialog.add_filter(filters)
 
-    def _set_open_file(self, filepath):
+    @staticmethod
+    def _set_open_file(filepath):
         """Set a filename as opened."""
         HeaderBar.get_default().set_open_file(filepath)
         ActionBar.get_default().set_state(True)

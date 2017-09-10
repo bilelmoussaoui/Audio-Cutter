@@ -20,6 +20,7 @@ along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 from gi.repository import Gio, GLib
 from . import Logger
 
+
 class Settings(Gio.Settings):
     """Gio.Settings handler."""
     # Default instance of Settings

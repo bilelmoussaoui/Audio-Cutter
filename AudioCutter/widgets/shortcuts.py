@@ -17,10 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
-
 from gi import require_version
 require_version("Gtk", "3.0")
 from gi.repository import Gtk
+
 
 class ShortuctsWindow(Gtk.Window):
     """Shortcuts Window widget."""

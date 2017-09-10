@@ -17,17 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
-from gi import require_version
-require_version("Gtk", "3.0")
-from gi.repository import Gtk
+import unittest
+from glob import glob
+
+import pycodestyle
 
 
-class SettingsWindow(Gtk.Window):
-    """Settings window widget."""
+class TestCodeFormat(unittest.TestCase):
+    """Test Code format using pep8."""
+    def setUp(self):
+        self.style = pycodestyle.StyleGuide(show_source=True,
+                                            config_file="../setup.cfg")
 
-    def __init__(self):
-        Gtk.Window.__init__(self)
+    def test_code_format(self):
+        """Test code format."""
+        files = glob("../**/**/*.py")
+        result = self.style.check_files(files)
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
 
-    def show_window(self):
-        """Show the current settings window."""
-        self.show_all()
+
+if __name__ == "__main__":
+    unittest.main()

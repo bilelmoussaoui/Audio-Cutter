@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
-
 from gettext import gettext as _
 
 from gi import require_version
@@ -101,4 +100,3 @@ class SoundConfig(Gtk.Box):
     def set_open_file(self, filename):
         """Set the max duration."""
         pass
-

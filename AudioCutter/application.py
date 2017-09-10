@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
-
 from gettext import gettext as _
 from .widgets import Window, AboutDialog, ShortuctsWindow, SettingsWindow
 from .modules import Logger, Settings
@@ -26,6 +25,7 @@ from .utils import show_app_menu
 from gi import require_version
 require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, Gtk, GLib
+
 
 class Application(Gtk.Application):
     """Main Application Object."""
@@ -50,18 +50,19 @@ class Application(Gtk.Application):
         window.set_application(self)
         self.add_window(window)
         window.show_all()
+        window.present()
 
     def _setup_css(self):
         """Setup the CSS."""
-        css_file = Gio.File.new_for_uri('resource:///org/gnome/AudioCutter/style.css')
+        resource = 'resource:///org/gnome/AudioCutter/style.css'
+        css_file = Gio.File.new_for_uri(resource)
         cssProvider = Gtk.CssProvider()
         screen = Gdk.Screen.get_default()
         styleContext = Gtk.StyleContext()
         cssProvider.load_from_file(css_file)
         styleContext.add_provider_for_screen(screen, cssProvider,
-                                                Gtk.STYLE_PROVIDER_PRIORITY_USER)
+                                             Gtk.STYLE_PROVIDER_PRIORITY_USER)
         Logger.debug("Loading css file {}".format(css_file))
-
 
     def _setup_app_menu(self):
         """Create the appmenu."""
@@ -85,14 +86,13 @@ class Application(Gtk.Application):
         help_section = Gio.MenuItem.new_section(None, help_content)
         self.app_menu.append_item(help_section)
         # Settings action
-        self.settings_action = Gio.SimpleAction.new("settings", None)
-        self.settings_action.connect("activate", self._on_settings)
-        self.add_action(self.settings_action)
+        action = Gio.SimpleAction.new("settings", None)
+        action.connect("activate", self._on_settings)
+        self.add_action(action)
 
         # Night Mode action
-
-        is_night_mode = GLib.Variant.new_boolean(Settings.get_default().is_night_mode)
-
+        is_night_mode = Settings.get_default().is_night_mode
+        is_night_mode = GLib.Variant.new_boolean(is_night_mode)
         action = Gio.SimpleAction.new_stateful("night_mode", None,
                                                is_night_mode)
         action.connect("change-state", self._on_night_mode)
@@ -104,7 +104,7 @@ class Application(Gtk.Application):
             action.connect("activate", self._on_shortcuts)
             self.add_action(action)
 
-        #About action
+        # About action
         action = Gio.SimpleAction.new("about", None)
         action.connect("activate", self._on_about)
         self.add_action(action)

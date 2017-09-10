@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 class AudioGraph:
     """The graph of the audio."""
     def __init__(self):
