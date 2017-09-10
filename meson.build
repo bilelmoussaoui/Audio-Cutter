@@ -2,7 +2,7 @@ project('AudioCutter',
   version: '0.1',
   meson_version: '>= 0.40',
   license: 'GPL-3.0',
-  defautlt_options: ['prefix=/usr']
+  default_options: ['prefix=/usr']
 )
 project_id = 'org.gnome.AudioCutter'
 
