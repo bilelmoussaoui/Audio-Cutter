@@ -77,6 +77,16 @@ class SoundConfig(Gtk.Box):
         listbox.set_valign(Gtk.Align.FILL)
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
+        def _resize_listbox_childs(listbox):
+            """Set the listbox childs to have the same height."""
+            max_height = 0
+            for row in listbox.get_children():
+                height = row.get_allocated_height()
+                if height > max_height:
+                    max_height = height
+            for row in listbox.get_children():
+                row.props.height_request = max_height
+
         for label, widget in list_:
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                           spacing=6)
@@ -88,6 +98,8 @@ class SoundConfig(Gtk.Box):
             listboxrow.get_style_context().add_class("config-list-box-row")
             listboxrow.add(box)
             listbox.add(listboxrow)
+        listbox.connect("realize", _resize_listbox_childs)
+
         return listbox
 
     def set_state(self, state):
