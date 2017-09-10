@@ -15,7 +15,7 @@ jobs:
           python3-pip
           python3-gobject
       - checkout
-      - run: pip install --user pycodestyle
+      - run: pip3 install pycodestyle
       - run: python3 ./tests/test_code_format.py
       - run: meson builddir
       - run: ninja -C builddir install

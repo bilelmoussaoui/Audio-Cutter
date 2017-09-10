@@ -29,6 +29,8 @@ from gi.repository import Gdk, Gio, Gtk, GLib
 
 class Application(Gtk.Application):
     """Main Application Object."""
+    # Main app instance
+    instance = None
 
     def __init__(self):
         Gtk.Application.__init__(self,
@@ -38,6 +40,12 @@ class Application(Gtk.Application):
         GLib.set_prgname("Audio Cutter")
         self.app_menu = Gio.Menu()
         self._setup_css()
+        Application.instance = self
+
+    @staticmethod
+    def get_default():
+        """Returns the default Application instance."""
+        return Application.instance
 
     def do_startup(self):
         """startup signal handler."""
@@ -113,7 +121,7 @@ class Application(Gtk.Application):
         action = Gio.SimpleAction.new("quit", None)
         action.connect("activate", self._on_quit)
         self.add_action(action)
-        if not show_app_menu():
+        if show_app_menu():
             self.set_app_menu(self.app_menu)
             Logger.debug("Adding GNOME app menu")
 

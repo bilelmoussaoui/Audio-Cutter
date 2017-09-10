@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
-
 from gettext import gettext as _
 from os import path
 
@@ -34,7 +33,8 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
 
     # GObject signals
     __gsignals__ = {
-        'open-file': (GObject.SignalFlags.RUN_FIRST, None, ())
+        'open-file': (GObject.SignalFlags.RUN_FIRST, None, ()),
+        'open-menu': (GObject.SignalFlags.RUN_FIRST, None, ())
     }
 
     def __init__(self):
@@ -42,6 +42,7 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         Gtk.HeaderBar.__init__(self)
         self._play_btn = Gtk.Button()
         self._open_btn = Gtk.Button()
+        self.menu_btn = Gtk.Button()
         self.set_title(_("Audio Cutter"))
         self.set_show_close_button(True)
         self._setup_widgets()
@@ -60,6 +61,13 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         self._open_btn.connect("clicked", self._open_file)
         self.pack_start(self._open_btn)
 
+        menu_icn = Gio.ThemedIcon(name="open-menu-symbolic")
+        menu_img = Gtk.Image.new_from_gicon(menu_icn, Gtk.IconSize.BUTTON)
+        self.menu_btn.set_image(menu_img)
+        self.menu_btn.set_visible(False)
+        self.menu_btn.set_no_show_all(True)
+        self.pack_end(self.menu_btn)
+
         # Play Button
         play_icn = Gio.ThemedIcon(name="media-playback-start-symbolic")
         play_img = Gtk.Image.new_from_gicon(play_icn, Gtk.IconSize.BUTTON)
@@ -67,7 +75,7 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         self._play_btn.set_sensitive(False)
         self.pack_start(self._play_btn)
 
-    def _open_file(self, button):
+    def _open_file(self, *args):
         """Send a open-file signal to the Main Window."""
         self.emit("open-file")
 
@@ -77,7 +85,10 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         Change the subtitle to the filename.
         Also makes the play button sensitive
         """
-        basename = path.basename(filename)
         self.set_subtitle(filename)
         self._play_btn.set_sensitive(True)
         self.set_has_subtitle(True)
+
+    def _trigger_popover(self, *args):
+        """Trigger the menu popover."""
+        self.emit("open-menu")

@@ -17,7 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
+from gi.repository import GLib
 
 
 def show_app_menu():
-    return False
+    """Return if we should use the app_menu or use a popover."""
+    return "gnome" in GLib.getenv("XDG_CURRENT_DESKTOP").lower()

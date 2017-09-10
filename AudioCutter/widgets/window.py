@@ -25,6 +25,7 @@ from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
 from ..modules import Logger, Settings
 from ..const import AUDIO_MIMES
+from ..utils import show_app_menu
 
 from gi import require_version
 require_version("Gtk", "3.0")
@@ -61,6 +62,16 @@ class Window(Gtk.ApplicationWindow):
         # Headerbar
         headerbar = HeaderBar.get_default()
         headerbar.connect("open-file", self._open_file)
+        # Set up the app menu in other DE than GNOME
+        if not show_app_menu():
+            from ..application import Application
+            app_menu = Application.get_default().app_menu
+            menu_btn = headerbar.menu_btn
+            menu_btn.set_visible(True)
+            menu_btn.set_no_show_all(False)
+            popover = Gtk.Popover.new_from_model(menu_btn, app_menu)
+            menu_btn.connect("clicked", self._toggle_popover,
+                             popover)
         self.set_titlebar(headerbar)
 
         # Action Bar
@@ -106,6 +117,14 @@ class Window(Gtk.ApplicationWindow):
         SoundConfig.get_default().set_state(True)
         SoundConfig.get_default().set_open_file(filepath)
         Settings.get_default().last_file = filepath
+
+    def _toggle_popover(self, button, popover):
+        """Toggle the app menu popover."""
+        if popover:
+            if popover.get_visible():
+                popover.hide()
+            else:
+                popover.show_all()
 
     def _restore_state(self):
         """Restore the latest position and opened file."""
