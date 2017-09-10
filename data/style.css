@@ -1,0 +1,12 @@
+@define-color row_border_color mix(@theme_bg_color, @theme_fg_color, 0.2);
+.config-list-box-row {
+    padding: 8px;
+    border-top: 1px solid @row_border_color;
+    border-left: 1px solid @row_border_color;
+    border-right: 1px solid @row_border_color;
+}
+
+.config-list-box:nth-last-child(2n),
+.config-list-box:last-child {
+    border-bottom: 1px solid @row_border_color;
+}

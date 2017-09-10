@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: fedora:latest
+    working_directory: ~/Audio-Cutter
+    steps:
+      - run: >
+          dnf -y install
+          gettext
+          gobject-introspection-devel
+          gtk3-devel
+          meson
+          ninja-build
+          pylint
+          python3-gobject
+      - checkout
+      - run: meson builddir
+      - run: ninja -C builddir install

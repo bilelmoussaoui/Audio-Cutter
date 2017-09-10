@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema path="/org/gnome/AudioCutter/" id="org.gnome.AudioCutter" gettext-domain="AudioCutter">
+        <key name="window-position" type="ai">
+            <default>[0,0]</default>
+            <summary>Default window postiton</summary>
+            <description>
+                Default window postiton
+            </description>
+        </key>
+        <key name="night-mode" type="b">
+            <default>false</default>
+            <summary>Night mode</summary>
+            <description>
+                Enable/disable night mode within the application
+            </description>
+        </key>
+        <key name="last-file" type="s">
+            <default>""</default>
+            <summary>File path of the latest opened file</summary>
+            <description>
+                File path of the latest opened file
+            </description>
+        </key>
+    </schema>
+</schemalist>

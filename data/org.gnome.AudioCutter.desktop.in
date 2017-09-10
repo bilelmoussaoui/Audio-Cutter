@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Audio Cutter
+GenericName=Audio Cutter
+Comment=Cut your audio files easily
+Type=Application
+Exec=audio-cutter
+Terminal=false
+Categories=GNOME;GTK;Audio;
+Keywords=Gnome;GTK;Audio;Cutter;
+Icon=org.gnome.AudioCutter
+StartupNotify=true
