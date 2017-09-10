@@ -33,8 +33,7 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
 
     # GObject signals
     __gsignals__ = {
-        'open-file': (GObject.SignalFlags.RUN_FIRST, None, ()),
-        'open-menu': (GObject.SignalFlags.RUN_FIRST, None, ())
+        'open-file': (GObject.SignalFlags.RUN_FIRST, None, ())
     }
 
     def __init__(self):
@@ -88,7 +87,3 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         self.set_subtitle(filename)
         self._play_btn.set_sensitive(True)
         self.set_has_subtitle(True)
-
-    def _trigger_popover(self, *args):
-        """Trigger the menu popover."""
-        self.emit("open-menu")
