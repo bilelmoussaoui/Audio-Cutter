@@ -17,9 +17,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
+from .objects import Time
+
 from gi.repository import GLib
 
 
 def show_app_menu():
     """Return if we should use the app_menu or use a popover."""
     return "gnome" in GLib.getenv("XDG_CURRENT_DESKTOP").lower()
+
+
+def format_ns(nanoseconds):
+    """
+    Convert nano seconds to a Time object.
+    Original code:
+    https://github.com/gkralik/python-gst-tutorial/blob/master/helper.py
+    """
+    seconds, nanoseconds = divmod(nanoseconds, 1000000000)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return Time(hours, minutes, seconds)

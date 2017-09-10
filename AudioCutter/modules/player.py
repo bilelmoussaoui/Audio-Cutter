@@ -18,11 +18,12 @@ You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 from .log import Logger
+from ..utils import format_ns
 
 from gi import require_version
 require_version('Gst', '1.0')
 require_version('GstPbutils', '1.0')
-from gi.repository import GObject, Gst, GstPbutils
+from gi.repository import GLib, GObject, Gst, GstPbutils
 
 class Player(GObject.GObject):
     """GStreamer player object."""
@@ -38,10 +39,12 @@ class Player(GObject.GObject):
     def __init__(self):
         GObject.GObject.__init__(self)
         Gst.init(None)
+        GstPbutils.pb_utils_init()
+        self._discoverer = GstPbutils.Discoverer.new(10 * Gst.SECOND)
 
         self.is_playing = False
         self.filepath = None
-        self.duration = Gst.CLOCK_TIME_NONE
+        self._duration = Gst.CLOCK_TIME_NONE
 
         self._playbin = Gst.ElementFactory.make("playbin", "player")
         bus = self._playbin.get_bus()
@@ -81,10 +84,18 @@ class Player(GObject.GObject):
 
     def set_open_file(self, filepath):
         """Set the current open file."""
-        self.filepath = filepath
+        self.filepath = "file://" + filepath
         self.stop()
-        self._playbin.set_property('uri', "file://" + self.filepath)
+        self._playbin.set_property('uri', self.filepath)
+
+    @property
+    def duration(self):
+        """Return the current file duration."""
         duration = self._playbin.query_duration(Gst.Format.TIME)[1]
+        if not duration:
+            info = self._discoverer.discover_uri(self.filepath)
+            duration = info.get_duration()
+        return format_ns(duration)
 
     def __on_bus_eos(self, *args):
         """End of stream handler."""

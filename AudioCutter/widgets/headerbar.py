@@ -98,4 +98,3 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
         self.play_btn.set_image(image)
         self.play_btn.set_tooltip_text(tooltip)
-

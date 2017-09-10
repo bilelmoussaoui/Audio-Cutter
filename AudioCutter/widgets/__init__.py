@@ -25,3 +25,4 @@ from .actionbar import ActionBar
 from .about import AboutDialog
 from .shortcuts import ShortuctsWindow
 from .settings import SettingsWindow
+from .time import TimeButton

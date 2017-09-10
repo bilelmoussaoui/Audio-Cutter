@@ -19,6 +19,8 @@ along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 from gettext import gettext as _
 
+from .time import TimeButton
+
 from gi import require_version
 require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -36,8 +38,8 @@ class SoundConfig(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL)
         self.set_border_width(18)
-        self._start_time = Gtk.SpinButton()
-        self._end_time = Gtk.SpinButton()
+        self._start_time = TimeButton()
+        self._end_time = TimeButton()
         self._fade_in = Gtk.Switch()
         self._fade_out = Gtk.Switch()
         self._setup_widgets()
@@ -109,6 +111,8 @@ class SoundConfig(Gtk.Box):
         self._fade_in.set_sensitive(state)
         self._fade_out.set_sensitive(state)
 
-    def set_open_file(self, filename):
+    def set_duration(self, duration):
         """Set the max duration."""
-        pass
+        self._start_time.duration = duration
+        self._end_time.duration = duration
+        self._end_time.time = duration

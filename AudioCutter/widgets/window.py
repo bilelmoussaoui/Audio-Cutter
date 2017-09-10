@@ -128,11 +128,14 @@ class Window(Gtk.ApplicationWindow):
     @staticmethod
     def _set_open_file(filepath):
         """Set a filename as opened."""
-        Player.get_default().set_open_file(filepath)
+        player = Player.get_default()
+        soundconfig = SoundConfig.get_default()
+
+        player.set_open_file(filepath)
         HeaderBar.get_default().set_open_file(filepath)
         ActionBar.get_default().set_state(True)
-        SoundConfig.get_default().set_state(True)
-        SoundConfig.get_default().set_open_file(filepath)
+        soundconfig.set_state(True)
+        soundconfig.set_duration(player.duration)
         Settings.get_default().last_file = filepath
 
     def _toggle_popover(self, button, popover):
