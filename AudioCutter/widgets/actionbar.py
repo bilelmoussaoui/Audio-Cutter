@@ -32,6 +32,7 @@ class ActionBar(Gtk.ActionBar):
 
     def __init__(self):
         Gtk.ActionBar.__init__(self)
+        self.set_border_width(12)
         self._save_btn = Gtk.Button()
         self._output_format = Gtk.ComboBox()
         self._setup_widgets()

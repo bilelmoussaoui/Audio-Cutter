@@ -1,0 +1,48 @@
+{
+    "app-id": "org.gnome.AudioCutter",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "3.26",
+    "sdk": "org.gnome.Sdk",
+    "command": "audio-cutter",
+    "cleanup": [
+        "/include",
+        "/lib/pkgconfig",
+        "/share/pkgconfig",
+        "/share/aclocal",
+        "/man",
+        "/share/man",
+        "/share/gtk-doc",
+        "/share/vala",
+        "*.la",
+        "*.a"
+    ],
+    "build-options": {
+        "cflags": "-O2 -g",
+        "cxxflags": "-O2 -g",
+        "env": {
+            "V": "1"
+        }
+    },
+    "finish-args": [
+        /* X11 + XShm */
+        "--share=ipc", "--socket=x11",
+        /* Wayland */
+        "--socket=wayland",
+        /* Filesystem */
+        "--filesystem=host",
+        /* dconf */
+        "--filesystem=xdg-run/dconf", "--filesystem=~/.config/dconf:ro",
+        "--talk-name=ca.desrt.dconf", "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+    ],
+    "modules": [
+        {
+            "name": "audio-cutter",
+            "buildsystem": "meson",
+            "sources": [{
+                "type": "git",
+                "url": "file://home/bilal/Audio-Cutter/"
+            }]
+        }
+    ]
+}
+

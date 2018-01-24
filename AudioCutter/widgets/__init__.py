@@ -23,6 +23,7 @@ from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
 from .actionbar import ActionBar
 from .about import AboutDialog
+from .notification import Notification
 from .shortcuts import ShortuctsWindow
 from .settings import SettingsWindow
 from .time import TimeButton

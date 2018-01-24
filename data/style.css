@@ -10,3 +10,7 @@
 .config-list-box:last-child {
     border-bottom: 1px solid @row_border_color;
 }
+
+.entry-error {
+    color: red;
+}

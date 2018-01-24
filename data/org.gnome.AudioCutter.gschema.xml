@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-    <schema path="/org/gnome/AudioCutter/" id="org.gnome.AudioCutter" gettext-domain="AudioCutter">
+    <schema path="/org/gnome/AudioCutter/" id="org.gnome.AudioCutter" gettext-domain="org.gnome.AudioCutter">
         <key name="window-position" type="ai">
             <default>[0,0]</default>
             <summary>Default window postiton</summary>

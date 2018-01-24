@@ -23,6 +23,7 @@ from gettext import gettext as _
 from .actionbar import ActionBar
 from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
+from .notification import Notification
 from ..modules import Logger, Player, Settings
 from ..const import AUDIO_MIMES
 from ..utils import show_app_menu
@@ -81,6 +82,10 @@ class Window(Gtk.ApplicationWindow):
         actionbar = ActionBar.get_default()
         self._main.pack_end(actionbar, False, False, 0)
 
+        # Notification
+        notification = Notification.get_default()
+        self._main.pack_start(notification, False, False, 0)
+
         # Audio Graph.
 
         # Config Box
@@ -102,10 +107,12 @@ class Window(Gtk.ApplicationWindow):
 
     def _open_file(self, *args):
         """Open an open file dialog to select an audio file."""
-        dialog = Gtk.FileChooserDialog(_("Please choose an audio file"),
-                                       self, Gtk.FileChooserAction.OPEN,
-                                       ("_Cancel", Gtk.ResponseType.CANCEL,
-                                        "_Open", Gtk.ResponseType.OK))
+        dialog = Gtk.FileChooserDialog(title=_("Please choose an audio file"),
+                                       action=Gtk.FileChooserAction.OPEN)
+        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        dialog.add_button(_("Open"), Gtk.ResponseType.OK)
+        dialog.set_transient_for(self)
+
         Window._add_filters(dialog)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:

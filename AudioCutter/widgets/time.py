@@ -17,8 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
+from gettext import gettext as _
+
 from ..objects import Time
 
+from .notification import Notification
 
 from gi import require_version
 require_version("Gtk", "3.0")
@@ -42,6 +45,7 @@ class TimeButton(Gtk.Box):
         # Time entry
         self._entry.set_max_length(8)
         self._entry.set_width_chars(8)
+        self._entry.connect("changed", self._on_type)
         self._entry.set_max_width_chars(8)
 
         # Up btn
@@ -113,3 +117,26 @@ class TimeButton(Gtk.Box):
                                                  self._time.minutes,
                                                  self._time.seconds)
         self._entry.set_text(label)
+
+    def _on_type(self, entry):
+        song_time = entry.get_text().strip().split(":")
+        # Make sure we have got hh:mm:ss
+        message = None
+        if len(song_time) == 3:
+            try:
+                hours, minutes, seconds = list(map(int, song_time))
+                if hours > 24:
+                    message = _("Hours should be < 24")
+                elif minutes > 60:
+                    message = _("Minutes must be < 60")
+                elif seconds > 60:
+                    message = _("Seconds must be < 60")
+            except (TypeError, ValueError):
+                message = _("Invalid time format, please follow hh:mm:ss")
+        else:
+            message = _("Invalid time format, please follow hh:mm:ss")
+        if message:
+            Notification.get_default().message = message
+            entry.get_style_context().add_class("entry-error")
+        else:
+            entry.get_style_context().remove_class("entry-error")

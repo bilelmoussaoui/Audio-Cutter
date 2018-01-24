@@ -32,10 +32,10 @@ from AudioCutter.application import Application
 
 if __name__ == "__main__":
 
-    locale.bindtextdomain('AudioCutter', '@LOCALE_DIR@')
-    locale.textdomain('AudioCutter')
-    gettext.bindtextdomain('AudioCutter', '@LOCALE_DIR@')
-    gettext.textdomain('AudioCutter')
+    locale.bindtextdomain('org.gnome.AudioCutter', '@LOCALE_DIR@')
+    locale.textdomain('org.gnome.AudioCutter')
+    gettext.bindtextdomain('org.gnome.AudioCutter', '@LOCALE_DIR@')
+    gettext.textdomain('org.gnome.AudioCutter')
 
 
     resource = Gio.resource_load(path.join('@DATA_DIR@',
