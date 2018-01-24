@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 from gettext import gettext as _
+
 from .widgets import Window, AboutDialog, ShortuctsWindow, SettingsWindow
 from .modules import Logger, Settings
 from .utils import show_app_menu

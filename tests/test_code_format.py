@@ -18,20 +18,26 @@ You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
+from os import path
 from glob import glob
 
 import pycodestyle
 
+ABS_PATH = path.abspath(path.join(path.dirname(path.abspath(__file__)),
+                                  "../"))
+
 
 class TestCodeFormat(unittest.TestCase):
     """Test Code format using pep8."""
+
     def setUp(self):
         self.style = pycodestyle.StyleGuide(show_source=True,
-                                            config_file="../setup.cfg")
+                                            ignore="E402")
 
     def test_code_format(self):
         """Test code format."""
-        files = glob("../**/**/*.py")
+
+        files = glob("{}/**/*.py".format(ABS_PATH))
         result = self.style.check_files(files)
         self.assertEqual(result.total_errors, 0,
                          "Found code style errors (and warnings).")
