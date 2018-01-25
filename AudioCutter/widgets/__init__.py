@@ -27,3 +27,4 @@ from .notification import Notification
 from .shortcuts import ShortuctsWindow
 from .settings import SettingsWindow
 from .time import TimeButton
+from .audio_graph import AudioGraph

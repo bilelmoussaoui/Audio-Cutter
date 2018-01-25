@@ -18,13 +18,22 @@ You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 from .objects import Time
-
+from hashlib import sha256
+from os import path, makedirs
 from gi.repository import GLib
 
 
 def show_app_menu():
     """Return if we should use the app_menu or use a popover."""
     return "gnome" in GLib.getenv("XDG_CURRENT_DESKTOP").lower()
+
+def get_wavefile_location_for_uri(uri):
+    filename = sha256(uri.encode("utf-8")).hexdigest()
+    cachedir = path.join(GLib.get_user_cache_dir(), "AudioCutter")
+    if not path.exists(cachedir):
+        makedirs(cachedir)
+    return path.join(cachedir, filename)
+
 
 
 def format_ns(nanoseconds):

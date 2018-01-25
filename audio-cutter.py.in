@@ -24,10 +24,11 @@ import locale
 import sys
 from os import path
 
-from gi.repository import Gio
+from gi import require_version
+require_version("GES", "1.0")
+from gi.repository import Gio, GES, Gst
 
 sys.path.insert(1, '@PYTHON_DIR@')
-from AudioCutter.application import Application
 
 
 if __name__ == "__main__":
@@ -43,6 +44,10 @@ if __name__ == "__main__":
     Gio.Resource._register(resource)
 
 
+    Gst.init(sys.argv)
+    res, sys.argv = GES.init_check(sys.argv)
+
+    from AudioCutter.application import Application
     try:
         app = Application()
         exit_status = app.run(sys.argv)

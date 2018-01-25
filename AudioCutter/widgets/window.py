@@ -24,6 +24,7 @@ from .actionbar import ActionBar
 from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
 from .notification import Notification
+from .audio_graph import AudioGraph
 from ..modules import Logger, Player, Settings
 from ..const import AUDIO_MIMES
 from ..utils import show_app_menu
@@ -86,7 +87,9 @@ class Window(Gtk.ApplicationWindow):
         notification = Notification.get_default()
         self._main.pack_start(notification, False, False, 0)
 
-        # Audio Graph.
+        # Audio Graph
+        audio_graph = AudioGraph()
+        self._main.pack_start(audio_graph, False, False, 0)
 
         # Config Box
         sound_config = SoundConfig.get_default()
@@ -144,6 +147,7 @@ class Window(Gtk.ApplicationWindow):
         soundconfig.set_state(True)
         soundconfig.set_duration(player.duration)
         Settings.get_default().last_file = filepath
+        AudioGraph.get_default().emit("file-selected")
 
     def _toggle_popover(self, button, popover):
         """Toggle the app menu popover."""

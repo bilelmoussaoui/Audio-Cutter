@@ -38,7 +38,6 @@ class Player(GObject.GObject):
 
     def __init__(self):
         GObject.GObject.__init__(self)
-        Gst.init(None)
         GstPbutils.pb_utils_init()
         self._discoverer = GstPbutils.Discoverer.new(10 * Gst.SECOND)
 
@@ -47,12 +46,12 @@ class Player(GObject.GObject):
         self._duration = Gst.CLOCK_TIME_NONE
 
         self._playbin = Gst.ElementFactory.make("playbin", "player")
-        bus = self._playbin.get_bus()
+        """bus = self._playbin.get_bus()
         bus.add_signal_watch()
         bus.connect("message::error", self.__on_bus_error)
         bus.connect("message::eos", self.__on_bus_eos)
         bus.connect("message::element", self.__on_bus_element)
-        bus.connect("message::stream-start", self._on_stream_start)
+        bus.connect("message::stream-start", self._on_stream_start)"""
 
     @staticmethod
     def get_default():
@@ -96,6 +95,10 @@ class Player(GObject.GObject):
             info = self._discoverer.discover_uri(self.filepath)
             duration = info.get_duration()
         return format_ns(duration)
+
+    @property
+    def uri(self):
+        return self.filepath
 
     def __on_bus_eos(self, *args):
         """End of stream handler."""
