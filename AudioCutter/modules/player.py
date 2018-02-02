@@ -3,8 +3,6 @@ Your favorite Audio Cutter.
 Author : Bilal Elmoussaoui (bil.elmoussaoui@gmail.com)
 Artist : Alfredo Hernández
 Website : https://github.com/bil-elmoussaoui/Audio-Cutter
-Licence : The script is released under GPL, uses a modified script
-     form Chromium project released under BSD license
 This file is part of AudioCutter.
 AudioCutter is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published
@@ -51,14 +49,10 @@ class Player(GObject.GObject):
         self._playbin = Gst.ElementFactory.make("playbin", "player")
         bus = self._playbin.get_bus()
         bus.add_signal_watch()
-        bus.connect("message", self._on_bus)
         bus.connect("message::error", self.__on_bus_error)
         bus.connect("message::eos", self.__on_bus_eos)
         bus.connect("message::element", self.__on_bus_element)
         bus.connect("message::stream-start", self._on_stream_start)
-
-    def _on_bus(self, bus, msg):
-        print(msg.type)
 
     @staticmethod
     def get_default():

@@ -3,8 +3,6 @@ Your favorite Audio Cutter.
 Author : Bilal Elmoussaoui (bil.elmoussaoui@gmail.com)
 Artist : Alfredo Hernández
 Website : https://github.com/bil-elmoussaoui/Audio-Cutter
-Licence : The script is released under GPL, uses a modified script
-     form Chromium project released under BSD license
 This file is part of AudioCutter.
 AudioCutter is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published
@@ -298,13 +296,12 @@ class AudioGraph(Gtk.Layout, Zoomable):
         self.discovered = False
         self._start = 0
         self._end = 0
-        self.adapter = None
         self._surface_x = 0
-        self._startLevelsDiscovery()
+        self._start_levels_discovery()
         self.connect("notify::height-request", self._height_changed_cb)
         self.show_all()
 
-    def _launchPipeline(self):
+    def _launch_pipeline(self):
         self.pipeline = Gst.parse_launch("uridecodebin name=decode uri=" +
                                          self._uri + " ! waveformbin name=wave"
                                          " ! fakesink qos=false name=faked")
@@ -327,28 +324,36 @@ class AudioGraph(Gtk.Layout, Zoomable):
         self.pipeline.set_state(Gst.State.PLAYING)
         bus.add_signal_watch()
         self.n_samples = self._asset.get_duration() / SAMPLE_DURATION
-        bus.connect("message", self._bus_message_cb)
+        bus.connect("message::error", self.__on_bus_error)
+        bus.connect("message::eos", self.__on_bus_eos)
 
-    def _bus_message_cb(self, bus, message):
-        print(message.type)
-        if message.type == Gst.MessageType.EOS:
-            self._prepareSamples()
-            self._startRendering()
-            self.stop_generation()
-        elif message.type == Gst.MessageType.ERROR:
-            self.stop_generation()
-            self._num_failures += 1
-            if self._num_failures < 2:
-                bus.disconnect_by_func(self._bus_message_cb)
-                self._launchPipeline()
-            else:
-                if self.pipeline:
-                    Gst.debug_bin_to_dot_file_with_ts(self.pipeline,
-                                                      Gst.DebugGraphDetails.ALL,
-                                                      "error-generating-waveforms")
+    def __disconnect_bus(self):
+        bus = self.pipeline.get_bus()
+        if bus:
+            bus.disconnect_by_func(self.__on_bus_eos)
+            bus.disconnect_by_func(self.__on_bus_error)
 
-    def _height_changed_cb(self, unused_widget, unused_param_spec):
+    def __on_bus_eos(self, bus, message):
+        """On End of stream signal."""
+        self._prepare_samples()
+        self._start_rendering()
+        self.stop_generation()
+    
+    def __on_bus_error(self, bus, message):
+        """On error signal."""
+        self.stop_generation()
+        self._num_failures += 1
+        if self._num_failures < 2:
+            self.__disconnect_bus()
+            self._launch_pipeline()
+        elif self.pipeline:
+            Gst.debug_bin_to_dot_file_with_ts(self.pipeline,
+                                              Gst.DebugGraphDetails.ALL,
+                                              "error-generating-waveforms")
+
+    def _height_changed_cb(self, *args):
         self._force_redraw = True
+        self.queue_draw()
 
     def _autoplug_select_cb(self, unused_decode, unused_pad, unused_caps, factory):
         # Don't plug video decoders / parsers.
@@ -356,11 +361,11 @@ class AudioGraph(Gtk.Layout, Zoomable):
             return True
         return False
 
-    def _prepareSamples(self):
+    def _prepare_samples(self):
         self._wavebin.finalize()
         self.samples = self._wavebin.samples
 
-    def _startRendering(self):
+    def _start_rendering(self):
         self.n_samples = len(self.samples)
         self.discovered = True
         self.queue_draw()
@@ -369,7 +374,7 @@ class AudioGraph(Gtk.Layout, Zoomable):
         self.emit("done")
 
     def start_generation(self):
-        self._startLevelsDiscovery()
+        self._start_levels_discovery()
         if not self.pipeline:
             # No need to generate as we loaded pre-generated .wave file.
             GLib.idle_add(self._emit_done_on_idle, priority=GLib.PRIORITY_LOW)
@@ -379,7 +384,7 @@ class AudioGraph(Gtk.Layout, Zoomable):
     def stop_generation(self):
         if self.pipeline:
             self.pipeline.set_state(Gst.State.NULL)
-            self.pipeline.get_bus().disconnect_by_func(self._bus_message_cb)
+            self.__disconnect_bus()
             self.pipeline = None
 
 
@@ -409,7 +414,6 @@ class AudioGraph(Gtk.Layout, Zoomable):
             surface_width = min(self.get_parent().get_allocation().width - clipped_rect.x,
                                 clipped_rect.width + MARGIN)
             surface_height = int(self.get_parent().get_allocation().height)
-            print(surface_height)
             self.surface = renderer.fill_surface(self.samples[start:end],
                                                  surface_width,
                                                  surface_height)
@@ -424,13 +428,15 @@ class AudioGraph(Gtk.Layout, Zoomable):
         asset_duration = self._asset.get_duration()
         return int(self.n_samples / (float(asset_duration)) / 1)
 
-    def _startLevelsDiscovery(self, *args):
+    def _start_levels_discovery(self, *args):
+        # Get the wavefile location
         filename = get_wavefile_location_for_uri(self._uri)
-
         if path.exists(filename):
+            # If the wavefile exists, use it to draw the waveform
             with open(filename, "rb") as samples:
                 self.samples = list(numpy.load(samples))
-            self._startRendering()
+            self._start_rendering()
         else:
+            # Otherwise launch the pipeline
             self.wavefile = filename
-            self._launchPipeline()
+            self._launch_pipeline()
