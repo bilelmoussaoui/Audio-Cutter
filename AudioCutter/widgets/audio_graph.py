@@ -34,6 +34,123 @@ SAMPLE_DURATION = Gst.SECOND / 100
 MARGIN = 500
 
 
+class Zoomable(object):
+    """Base class for conversions between timeline timestamps and UI pixels.
+    Complex Timeline interfaces v2 (01 Jul 2008)
+    Zoomable
+    -----------------------
+    Interface for the Complex Timeline widgets for setting, getting,
+    distributing and modifying the zoom ratio and the size of the widget.
+    A zoomratio is the number of pixels per second
+    ex : 10.0 = 10 pixels for a second
+    ex : 0.1 = 1 pixel for 10 seconds
+    ex : 1.0 = 1 pixel for a second
+     Class Methods
+    . pixelToNs(pixels)
+    . nsToPixels(time)
+    . setZoomRatio
+    Instance Methods
+    . zoomChanged()
+    """
+
+    sigid = None
+    _instances = []
+    max_zoom = 1000.0
+    min_zoom = 0.25
+    zoom_steps = 100
+    zoom_range = max_zoom - min_zoom
+    _cur_zoom = 20
+    zoomratio = None
+
+
+    def __init__(self):
+        # FIXME: ideally we should deprecate this
+        Zoomable.addInstance(self)
+        if Zoomable.zoomratio is None:
+            Zoomable.zoomratio = self.computeZoomRatio(self._cur_zoom)
+
+    def __del__(self):
+        if self in Zoomable._instances:
+            # FIXME: ideally we should deprecate this and spit a warning here
+            self._instances.remove(self)
+
+    @classmethod
+    def addInstance(cls, instance):
+        cls._instances.append(instance)
+
+    @classmethod
+    def removeInstance(cls, instance):
+        cls._instances.remove(instance)
+
+    @classmethod
+    def setZoomRatio(cls, ratio):
+        ratio = min(max(cls.min_zoom, ratio), cls.max_zoom)
+        if cls.zoomratio != ratio:
+            cls.zoomratio = ratio
+            for inst in cls._instances:
+                inst.zoomChanged()
+
+    @classmethod
+    def setZoomLevel(cls, level):
+        level = int(max(0, min(level, cls.zoom_steps)))
+        if level != cls._cur_zoom:
+            cls._cur_zoom = level
+            cls.setZoomRatio(cls.computeZoomRatio(level))
+
+    @classmethod
+    def getCurrentZoomLevel(cls):
+        return cls._cur_zoom
+
+    @classmethod
+    def zoomIn(cls,  *args):
+        cls.setZoomLevel(cls._cur_zoom + 1)
+
+    @classmethod
+    def zoomOut(cls, *args):
+        cls.setZoomLevel(cls._cur_zoom - 1)
+
+    @classmethod
+    def computeZoomRatio(cls, x):
+        return ((((float(x) / cls.zoom_steps) ** 3) * cls.zoom_range) +
+                cls.min_zoom)
+
+    @classmethod
+    def computeZoomLevel(cls, ratio):
+        return int((
+            (max(0, ratio - cls.min_zoom) /
+                cls.zoom_range) ** (1.0 / 3.0)) * cls.zoom_steps)
+
+    @classmethod
+    def pixelToNs(cls, pixel):
+        """Returns the duration equivalent of the specified pixel."""
+        return int(pixel * Gst.SECOND / cls.zoomratio)
+
+    @classmethod
+    def pixelToNsAt(cls, pixel, ratio):
+        """Returns the duration equivalent of the specified pixel."""
+        return int(pixel * Gst.SECOND / ratio)
+
+    @classmethod
+    def nsToPixel(cls, duration):
+        """Returns the pixel equivalent of the specified duration"""
+        # Here, a long time ago (206f3a05), a pissed programmer said:
+        # DIE YOU CUNTMUNCH CLOCK_TIME_NONE UBER STUPIDITY OF CRACK BINDINGS !!
+        if duration == Gst.CLOCK_TIME_NONE:
+            return 0
+        return int((float(duration) / Gst.SECOND) * cls.zoomratio)
+
+    @classmethod
+    def nsToPixelAccurate(cls, duration):
+        """Returns the pixel equivalent of the specified duration."""
+        # Here, a long time ago (206f3a05), a pissed programmer said:
+        # DIE YOU CUNTMUNCH CLOCK_TIME_NONE UBER STUPIDITY OF CRACK BINDINGS !!
+        if duration == Gst.CLOCK_TIME_NONE:
+            return 0
+        return ((float(duration) / Gst.SECOND) * cls.zoomratio)
+
+    def zoomChanged(self):
+        pass
+
 class PreviewerBin(Gst.Bin):
     """Baseclass for elements gathering datas to create previews."""
 
@@ -162,11 +279,12 @@ class WaveformPreviewer(PreviewerBin):
 Gst.Element.register(None, "waveformbin", Gst.Rank.NONE, WaveformPreviewer)
 
 
-class AudioGraph(Gtk.Layout):
+class AudioGraph(Gtk.Layout, Zoomable):
     """The graph of the audio."""
 
     def __init__(self, uri, asset):
         Gtk.Layout.__init__(self)
+        Zoomable.__init__(self)
 
         self._asset = asset
         self._uri = uri
@@ -218,10 +336,6 @@ class AudioGraph(Gtk.Layout):
             self._startRendering()
             self.stop_generation()
         elif message.type == Gst.MessageType.ERROR:
-            if self.adapter:
-                self.adapter.stop()
-                self.adapter = None
-            # Something went wrong TODO : recover
             self.stop_generation()
             self._num_failures += 1
             if self._num_failures < 2:
@@ -243,16 +357,12 @@ class AudioGraph(Gtk.Layout):
         return False
 
     def _prepareSamples(self):
-        proxy = self._asset.get_proxy_target()
         self._wavebin.finalize()
         self.samples = self._wavebin.samples
-        print(self.samples)
 
     def _startRendering(self):
         self.n_samples = len(self.samples)
         self.discovered = True
-        if self.adapter:
-            self.adapter.stop()
         self.queue_draw()
 
     def _emit_done_on_idle(self):
@@ -265,18 +375,17 @@ class AudioGraph(Gtk.Layout):
             GLib.idle_add(self._emit_done_on_idle, priority=GLib.PRIORITY_LOW)
             return
         self.pipeline.set_state(Gst.State.PLAYING)
-        if self.adapter is not None:
-            self.adapter.start()
 
     def stop_generation(self):
-        if self.adapter is not None:
-            self.adapter.stop()
-            self.adapter = None
-
         if self.pipeline:
             self.pipeline.set_state(Gst.State.NULL)
             self.pipeline.get_bus().disconnect_by_func(self._bus_message_cb)
             self.pipeline = None
+
+
+    def zoomChanged(self):
+        self._force_redraw = True
+        self.queue_draw()
 
     def do_draw(self, context):
         if not self.discovered:
@@ -300,6 +409,7 @@ class AudioGraph(Gtk.Layout):
             surface_width = min(self.get_parent().get_allocation().width - clipped_rect.x,
                                 clipped_rect.width + MARGIN)
             surface_height = int(self.get_parent().get_allocation().height)
+            print(surface_height)
             self.surface = renderer.fill_surface(self.samples[start:end],
                                                  surface_width,
                                                  surface_height)
@@ -309,12 +419,6 @@ class AudioGraph(Gtk.Layout):
         context.set_operator(cairo.OPERATOR_OVER)
         context.set_source_surface(self.surface, self._surface_x, 0)
         context.paint()
-
-
-    def pixelToNs(self, pixel):
-        """Returns the duration equivalent of the specified pixel."""
-        return int(pixel * Gst.SECOND / 1)
-
 
     def _get_num_inpoint_samples(self):
         asset_duration = self._asset.get_duration()

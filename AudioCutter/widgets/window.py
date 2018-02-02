@@ -23,6 +23,7 @@ from gettext import gettext as _
 from .actionbar import ActionBar
 from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
+from .zoombox import ZoomBox
 from .notification import Notification
 from .audio_graph import AudioGraph
 from ..modules import Logger, Player, Settings, Exporter
@@ -89,10 +90,18 @@ class Window(Gtk.ApplicationWindow):
         notification = Notification.get_default()
         self._main.pack_start(notification, False, False, 0)
 
+
         # Audio Graph
         self.audio_graph_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.audio_graph_box.get_style_context().add_class("audio-graph-container")
-        self._main.pack_start(self.audio_graph_box, True, True, 0)
+        self.zoombox = ZoomBox()
+
+        overlay = Gtk.Overlay()
+        overlay.add(self.audio_graph_box)
+        overlay.add_overlay(self.zoombox)
+
+        self._main.pack_start(overlay, True, True, 0)
+
 
         # Config Box
         sound_config = SoundConfig.get_default()
@@ -155,6 +164,8 @@ class Window(Gtk.ApplicationWindow):
             self.audio_graph_box.remove(child)
         self.audio_graph_box.pack_start(audio_graph, True, True, 0)
         audio_graph.set_visible(True)
+        self.zoombox.zoom_up.connect("clicked", audio_graph.zoomIn)
+        self.zoombox.zoom_down.connect("clicked", audio_graph.zoomOut)
 
     def _on_duration_changed(self, *args):
         sound_config = SoundConfig.get_default()
