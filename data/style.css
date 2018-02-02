@@ -14,3 +14,8 @@
 .entry-error {
     color: red;
 }
+
+.audio-graph-container {
+    border-bottom: 1px solid @row_border_color;
+    background-color: white;
+}

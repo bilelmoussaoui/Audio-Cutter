@@ -25,13 +25,13 @@ from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
 from .notification import Notification
 from .audio_graph import AudioGraph
-from ..modules import Logger, Player, Settings
+from ..modules import Logger, Player, Settings, Exporter
 from ..const import AUDIO_MIMES
 from ..utils import show_app_menu
 
 from gi import require_version
 require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, Gio
 
 
 class Window(Gtk.ApplicationWindow):
@@ -47,6 +47,7 @@ class Window(Gtk.ApplicationWindow):
         self._restore_state()
         Player.get_default().connect("playing", self._on_play)
         Player.get_default().connect("paused", self._on_paused)
+        Player.get_default().connect("duration-changed", self._on_duration_changed)
 
     @staticmethod
     def get_default():
@@ -81,6 +82,7 @@ class Window(Gtk.ApplicationWindow):
 
         # Action Bar
         actionbar = ActionBar.get_default()
+        actionbar.connect("selected-format", self._on_export)
         self._main.pack_end(actionbar, False, False, 0)
 
         # Notification
@@ -88,8 +90,9 @@ class Window(Gtk.ApplicationWindow):
         self._main.pack_start(notification, False, False, 0)
 
         # Audio Graph
-        audio_graph = AudioGraph()
-        self._main.pack_start(audio_graph, False, False, 0)
+        self.audio_graph_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.audio_graph_box.get_style_context().add_class("audio-graph-container")
+        self._main.pack_start(self.audio_graph_box, True, True, 0)
 
         # Config Box
         sound_config = SoundConfig.get_default()
@@ -120,7 +123,7 @@ class Window(Gtk.ApplicationWindow):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             opened_file = dialog.get_filename()
-            Window._set_open_file(opened_file)
+            self._set_open_file(Gio.File.new_for_path(opened_file))
             Logger.debug("File Selected {}".format(opened_file))
         else:
             Logger.debug("Open file dialog closed without selecting a file.")
@@ -135,19 +138,40 @@ class Window(Gtk.ApplicationWindow):
             filters.add_mime_type(mimetype)
         dialog.add_filter(filters)
 
-    @staticmethod
-    def _set_open_file(filepath):
+    def _set_open_file(self, f):
         """Set a filename as opened."""
         player = Player.get_default()
         soundconfig = SoundConfig.get_default()
 
-        player.set_open_file(filepath)
-        HeaderBar.get_default().set_open_file(filepath)
+        player.set_open_file(f)
+        HeaderBar.get_default().set_audio_title(player.title)
         ActionBar.get_default().set_state(True)
         soundconfig.set_state(True)
         soundconfig.set_duration(player.duration)
-        Settings.get_default().last_file = filepath
-        AudioGraph.get_default().emit("file-selected")
+        Settings.get_default().last_file = f.get_uri()
+
+        audio_graph = AudioGraph(f.get_uri(), player.asset)
+        for child in self.audio_graph_box.get_children():
+            self.audio_graph_box.remove(child)
+        self.audio_graph_box.pack_start(audio_graph, True, True, 0)
+        audio_graph.set_visible(True)
+
+    def _on_duration_changed(self, *args):
+        sound_config = SoundConfig.get_default()
+        sound_config.start_time.step_up()
+
+    def _on_export(self, action_bar, audio_format):
+        sound_config = SoundConfig.get_default()
+        is_fade_in = sound_config.is_fade_in
+        is_fade_out = sound_config.is_fade_out 
+        start_time = sound_config.start_time.time.total
+        end_time = sound_config.end_time.time.total
+        audio_path = Player.get_default().uri
+        exporter = Exporter(start_time=start_time, end_time=end_time,
+                            is_fade_in=is_fade_in, is_fade_out=is_fade_out,
+                            path=audio_path, audio_format=audio_format)
+        exporter.do()
+
 
     def _toggle_popover(self, button, popover):
         """Toggle the app menu popover."""
@@ -166,8 +190,8 @@ class Window(Gtk.ApplicationWindow):
         else:
             self.set_position(Gtk.WindowPosition.CENTER)
 
-        last_file = settings.last_file
-        if last_file and path.exists(last_file):
+        last_file = Gio.File.new_for_uri(settings.last_file)
+        if last_file and last_file.query_exists():
             self._set_open_file(last_file)
 
     def _on_close(self):

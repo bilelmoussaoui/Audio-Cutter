@@ -52,19 +52,19 @@ class TimeButton(Gtk.Box):
         up_icn = Gio.ThemedIcon(name="list-add-symbolic")
         up_img = Gtk.Image.new_from_gicon(up_icn, Gtk.IconSize.BUTTON)
         self._up_btn.set_image(up_img)
-        self._up_btn.connect("clicked", self._step_up)
+        self._up_btn.connect("clicked", self.step_up)
         self._up_btn.get_style_context().add_class("flat")
 
         # Lower btn
         lower_icn = Gio.ThemedIcon(name="list-remove-symbolic")
         lower_img = Gtk.Image.new_from_gicon(lower_icn, Gtk.IconSize.BUTTON)
         self._lower_btn.set_image(lower_img)
-        self._lower_btn.connect("clicked", self._step_down)
+        self._lower_btn.connect("clicked", self.step_down)
         self._lower_btn.get_style_context().add_class("flat")
 
         self.pack_start(self._entry, False, False, 0)
-        self.pack_start(self._up_btn, False, False, 0)
         self.pack_start(self._lower_btn, False, False, 0)
+        self.pack_start(self._up_btn, False, False, 0)
 
     @property
     def duration(self):
@@ -79,7 +79,7 @@ class TimeButton(Gtk.Box):
         self._duration = duration.copy()
         self.__redraw()
 
-    def _step_down(self, *args):
+    def step_down(self, *args):
         self.time.down()
         if self.time.total < 0:
             time = Time(0, 0, 0)
@@ -87,7 +87,7 @@ class TimeButton(Gtk.Box):
             time = self.time
         self.time = time
 
-    def _step_up(self, *args):
+    def step_up(self, *args):
         self.time.up()
         if self.time.total >= self.duration.total:
             time = self.duration.copy()

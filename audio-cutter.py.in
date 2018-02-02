@@ -29,7 +29,7 @@ require_version("GES", "1.0")
 from gi.repository import Gio, GES, Gst
 
 sys.path.insert(1, '@PYTHON_DIR@')
-
+sys.path.append(path.join("@LIBDIR@", 'AudioCutter/python'))
 
 if __name__ == "__main__":
 

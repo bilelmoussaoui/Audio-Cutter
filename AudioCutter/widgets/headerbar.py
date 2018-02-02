@@ -76,13 +76,13 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         """Send a open-file signal to the Main Window."""
         self.emit("open-file")
 
-    def set_open_file(self, filename):
+    def set_audio_title(self, title):
         """
         Set a filename as open.
         Change the subtitle to the filename.
         Also makes the play button sensitive
         """
-        self.set_subtitle(filename)
+        self.set_subtitle(title)
         self.play_btn.set_sensitive(True)
         self.set_has_subtitle(True)
 

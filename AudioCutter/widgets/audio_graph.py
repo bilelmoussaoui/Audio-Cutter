@@ -18,17 +18,20 @@ You should have received a copy of the GNU General Public License
 along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy
+import cairo
 from os import path
 from gi import require_version
 require_version("Gtk", "3.0")
 require_version("GES", "1.0")
-from gi.repository import Gst, Gtk, GES, GObject, GLib
+from gi.repository import Gst, Gtk, GES, GObject, GLib, Gdk
 
 from ..modules import Player
 from ..utils import get_wavefile_location_for_uri
+import renderer
 
 
 SAMPLE_DURATION = Gst.SECOND / 100
+MARGIN = 500
 
 
 class PreviewerBin(Gst.Bin):
@@ -161,62 +164,60 @@ Gst.Element.register(None, "waveformbin", Gst.Rank.NONE, WaveformPreviewer)
 
 class AudioGraph(Gtk.Layout):
     """The graph of the audio."""
-    instance = None
-    __gsignals__ = {
-        'file-selected': (GObject.SignalFlags.RUN_FIRST, None, ()),
-    }
 
-    def __init__(self):
+    def __init__(self, uri, asset):
         Gtk.Layout.__init__(self)
-        self.connect("file-selected", self._on_file_selected)
+
+        self._asset = asset
+        self._uri = uri
+        self.wavefile = None
         self.pipeline = None
         self._wavebin = None
-        self.n_samples = 0
+        self.n_samples = asset.get_duration() / SAMPLE_DURATION
         self.samples = None
+        self._force_redraw = True
         self.peaks = None
         self.discovered = False
         self._start = 0
         self._end = 0
+        self.adapter = None
         self._surface_x = 0
+        self._startLevelsDiscovery()
+        self.connect("notify::height-request", self._height_changed_cb)
         self.show_all()
 
-    @staticmethod
-    def get_default():
-        if AudioGraph.instance is None:
-            AudioGraph.instance = AudioGraph()
-        return AudioGraph.instance
-
-    def _on_file_selected(self, *args):
-        self.n_samples = Player.get_default().duration.total / SAMPLE_DURATION
-        self._startLevelsDiscovery()
-
     def _launchPipeline(self):
-        uri = Player.get_default().uri
         self.pipeline = Gst.parse_launch("uridecodebin name=decode uri=" +
-                                         uri + " ! waveformbin name=wave"
+                                         self._uri + " ! waveformbin name=wave"
                                          " ! fakesink qos=false name=faked")
 
         Gst.ElementFactory.make("uritranscodebin", None)
+
+        clock = GObject.new(GObject.type_from_name("GstCpuThrottlingClock"))
+        clock.props.cpu_usage = 90
+        self.pipeline.use_clock(clock)
+
         faked = self.pipeline.get_by_name("faked")
         faked.props.sync = True
         self._wavebin = self.pipeline.get_by_name("wave")
 
-        self._wavebin.props.uri = uri
-        self._wavebin.props.duration = Player.get_default().duration.total
+        self._wavebin.props.uri = self._asset.get_id()
+        self._wavebin.props.duration = self._asset.get_duration()
         decode = self.pipeline.get_by_name("decode")
         decode.connect("autoplug-select", self._autoplug_select_cb)
         bus = self.pipeline.get_bus()
+        self.pipeline.set_state(Gst.State.PLAYING)
         bus.add_signal_watch()
-        bus.connect("message::eos", self.__on_bus_eos)
-
-    def __on_bus_eos(self, *args):
-        self._prepareSamples()
-        self._startRendering()
-        self.stop_generation()
+        self.n_samples = self._asset.get_duration() / SAMPLE_DURATION
+        bus.connect("message", self._bus_message_cb)
 
     def _bus_message_cb(self, bus, message):
-
-        if message.type == Gst.MessageType.ERROR:
+        print(message.type)
+        if message.type == Gst.MessageType.EOS:
+            self._prepareSamples()
+            self._startRendering()
+            self.stop_generation()
+        elif message.type == Gst.MessageType.ERROR:
             if self.adapter:
                 self.adapter.stop()
                 self.adapter = None
@@ -224,14 +225,16 @@ class AudioGraph(Gtk.Layout):
             self.stop_generation()
             self._num_failures += 1
             if self._num_failures < 2:
-                bus.disconnect_by_func(self._busMessageCb)
+                bus.disconnect_by_func(self._bus_message_cb)
                 self._launchPipeline()
-                self.become_controlled()
             else:
                 if self.pipeline:
                     Gst.debug_bin_to_dot_file_with_ts(self.pipeline,
                                                       Gst.DebugGraphDetails.ALL,
                                                       "error-generating-waveforms")
+
+    def _height_changed_cb(self, unused_widget, unused_param_spec):
+        self._force_redraw = True
 
     def _autoplug_select_cb(self, unused_decode, unused_pad, unused_caps, factory):
         # Don't plug video decoders / parsers.
@@ -240,8 +243,10 @@ class AudioGraph(Gtk.Layout):
         return False
 
     def _prepareSamples(self):
+        proxy = self._asset.get_proxy_target()
         self._wavebin.finalize()
         self.samples = self._wavebin.samples
+        print(self.samples)
 
     def _startRendering(self):
         self.n_samples = len(self.samples)
@@ -259,7 +264,6 @@ class AudioGraph(Gtk.Layout):
             # No need to generate as we loaded pre-generated .wave file.
             GLib.idle_add(self._emit_done_on_idle, priority=GLib.PRIORITY_LOW)
             return
-
         self.pipeline.set_state(Gst.State.PLAYING)
         if self.adapter is not None:
             self.adapter.start()
@@ -271,7 +275,7 @@ class AudioGraph(Gtk.Layout):
 
         if self.pipeline:
             self.pipeline.set_state(Gst.State.NULL)
-            self.pipeline.get_bus().disconnect_by_func(self._busMessageCb)
+            self.pipeline.get_bus().disconnect_by_func(self._bus_message_cb)
             self.pipeline = None
 
     def do_draw(self, context):
@@ -293,7 +297,7 @@ class AudioGraph(Gtk.Layout):
                                                  SAMPLE_DURATION)))
             self._end = end
             self._surface_x = clipped_rect.x
-            surface_width = min(self.props.width_request - clipped_rect.x,
+            surface_width = min(self.get_parent().get_allocation().width - clipped_rect.x,
                                 clipped_rect.width + MARGIN)
             surface_height = int(self.get_parent().get_allocation().height)
             self.surface = renderer.fill_surface(self.samples[start:end],
@@ -306,9 +310,18 @@ class AudioGraph(Gtk.Layout):
         context.set_source_surface(self.surface, self._surface_x, 0)
         context.paint()
 
-    def _startLevelsDiscovery(self):
-        uri = Player.get_default().uri
-        filename = get_wavefile_location_for_uri(uri)
+
+    def pixelToNs(self, pixel):
+        """Returns the duration equivalent of the specified pixel."""
+        return int(pixel * Gst.SECOND / 1)
+
+
+    def _get_num_inpoint_samples(self):
+        asset_duration = self._asset.get_duration()
+        return int(self.n_samples / (float(asset_duration)) / 1)
+
+    def _startLevelsDiscovery(self, *args):
+        filename = get_wavefile_location_for_uri(self._uri)
 
         if path.exists(filename):
             with open(filename, "rb") as samples:
@@ -316,4 +329,4 @@ class AudioGraph(Gtk.Layout):
             self._startRendering()
         else:
             self.wavefile = filename
-        self._launchPipeline()
+            self._launchPipeline()

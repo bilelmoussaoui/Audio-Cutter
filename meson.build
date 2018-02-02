@@ -1,4 +1,4 @@
-project('AudioCutter',
+project('AudioCutter', 'c',
   version: '0.1',
   meson_version: '>= 0.40',
   license: 'GPL-3.0',
@@ -30,9 +30,23 @@ conf.set('LOCALE_DIR', LOCALE_DIR)
 conf.set('PYTHON_DIR', PYTHON_DIR)
 conf.set('VERSION', meson.project_version())
 conf.set('PROJECT_NAME', meson.project_name())
-
+conf.set('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 subdir('data')
 subdir('po')
+
+
+
+python_dep = dependency('python3', version : '>= 3.3')
+gst_dep = dependency('gstreamer-1.0', version : '>= 1.12')
+cairo_dep = dependency('cairo')
+pycairo_dep = dependency('py3cairo')
+
+shared_library('renderer',
+    'AudioCutter/objects/renderer.c',
+    dependencies: [gst_dep, python_dep, pycairo_dep, cairo_dep],
+    name_prefix : '',
+    install: true,
+    install_dir: get_option('libdir') + '/AudioCutter/python')
 
 
 install_subdir(

@@ -20,6 +20,7 @@ along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 from gettext import gettext as _
 
 from .time import TimeButton
+from ..utils import format_ns
 
 from gi import require_version
 require_version("Gtk", "3.0")
@@ -49,6 +50,22 @@ class SoundConfig(Gtk.Box):
         if SoundConfig.instance is None:
             SoundConfig.instance = SoundConfig()
         return SoundConfig.instance
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @property
+    def is_fade_in(self):
+        return self._fade_in.get_active()
+
+    @property
+    def is_fade_out(self):
+        return self._fade_out.get_active()
 
     def _setup_widgets(self):
         """Setup the main SoundConfig widgets."""
@@ -113,6 +130,7 @@ class SoundConfig(Gtk.Box):
 
     def set_duration(self, duration):
         """Set the max duration."""
-        self._start_time.duration = duration
-        self._end_time.duration = duration
-        self._end_time.time = duration
+        time_obj = format_ns(duration)
+        self._start_time.duration = time_obj
+        self._end_time.duration = time_obj
+        self._end_time.time = time_obj

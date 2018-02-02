@@ -4,6 +4,7 @@ builddir/
 __pycache__/
 *.py[cod]
 *$py.class
+.flatpak-builder/
 
 # C extensions
 *.so

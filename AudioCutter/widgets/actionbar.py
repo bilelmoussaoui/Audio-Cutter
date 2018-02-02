@@ -22,15 +22,19 @@ from gettext import gettext as _
 from ..const import AUDIO_MIMES
 from gi import require_version
 require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 
 
-class ActionBar(Gtk.ActionBar):
+class ActionBar(Gtk.ActionBar, GObject.GObject):
     """ActionBar widget."""
     # ToolBar Instance
     instance = None
+    __gsignals__ = {
+        'selected-format': (GObject.SignalFlags.RUN_FIRST, None, (str, ))
+    }
 
     def __init__(self):
+        GObject.GObject.__init__(self)
         Gtk.ActionBar.__init__(self)
         self.set_border_width(12)
         self._save_btn = Gtk.Button()
@@ -48,6 +52,7 @@ class ActionBar(Gtk.ActionBar):
         """Create/Setup the main widgets of the ActionBar."""
         # Save Button
         self._save_btn.set_label(_("Save"))
+        self._save_btn.connect("clicked", self._on_save)
         self._save_btn.get_style_context().add_class("suggested-action")
         self._save_btn.set_sensitive(False)
         self.pack_end(self._save_btn)
@@ -67,3 +72,12 @@ class ActionBar(Gtk.ActionBar):
         """Set the ActionBar as active/inactive."""
         self._save_btn.set_sensitive(state)
         self._output_format.set_sensitive(state)
+
+    def _on_save(self, button):
+        active_id = self._output_format.get_active()
+        audio_mimes_keys = list(AUDIO_MIMES.keys())
+        try:
+            output_format = audio_mimes_keys[active_id]
+        except KeyError:
+            output_format = audio_mimes_keys[0]
+        self.emit("selected-format", output_format)

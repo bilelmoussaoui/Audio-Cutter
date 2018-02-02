@@ -23,13 +23,15 @@ from ..utils import format_ns
 from gi import require_version
 require_version('Gst', '1.0')
 require_version('GstPbutils', '1.0')
-from gi.repository import GLib, GObject, Gst, GstPbutils
+require_version('GES', '1.0')
+from gi.repository import GLib, GObject, Gst, GstPbutils, GES
 
 class Player(GObject.GObject):
     """GStreamer player object."""
 
     __gsignals__ = {
         'playing': (GObject.SignalFlags.RUN_FIRST, None, ()),
+        'duration-changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
         'paused': (GObject.SignalFlags.RUN_FIRST, None, ())
     }
 
@@ -44,14 +46,19 @@ class Player(GObject.GObject):
         self.is_playing = False
         self.filepath = None
         self._duration = Gst.CLOCK_TIME_NONE
+        self.asset = None
 
         self._playbin = Gst.ElementFactory.make("playbin", "player")
-        """bus = self._playbin.get_bus()
+        bus = self._playbin.get_bus()
         bus.add_signal_watch()
+        bus.connect("message", self._on_bus)
         bus.connect("message::error", self.__on_bus_error)
         bus.connect("message::eos", self.__on_bus_eos)
         bus.connect("message::element", self.__on_bus_element)
-        bus.connect("message::stream-start", self._on_stream_start)"""
+        bus.connect("message::stream-start", self._on_stream_start)
+
+    def _on_bus(self, bus, msg):
+        print(msg.type)
 
     @staticmethod
     def get_default():
@@ -62,12 +69,16 @@ class Player(GObject.GObject):
 
     def play(self, *args):
         """Play the current audio file."""
+        def on_duration_changed():
+            self.emit("duration-changed")
+            return self.is_playing
         if self.is_playing:
             # Stop the current audio file from playing
             self.stop()
         self._playbin.set_state(Gst.State.PLAYING)
         self.is_playing = True
         self.emit("playing")
+        GLib.timeout_add_seconds(1, on_duration_changed)
 
     def pause(self, *args):
         """Pause the audio player."""
@@ -83,22 +94,31 @@ class Player(GObject.GObject):
 
     def set_open_file(self, filepath):
         """Set the current open file."""
-        self.filepath = "file://" + filepath
+        self.filepath = filepath
+        self.asset = GES.UriClipAsset.request_sync(self.filepath.get_uri())
         self.stop()
-        self._playbin.set_property('uri', self.filepath)
+        self._playbin.set_property('uri', self.filepath.get_uri())
 
     @property
     def duration(self):
         """Return the current file duration."""
-        duration = self._playbin.query_duration(Gst.Format.TIME)[1]
-        if not duration:
-            info = self._discoverer.discover_uri(self.filepath)
-            duration = info.get_duration()
-        return format_ns(duration)
+        if self.asset:
+            return self.asset.get_duration()
+        return None
+
+    @property
+    def title(self):
+        if self.asset:
+            tags = self.asset.get_info().get_tags()
+            if tags:
+                (exists, title) = tags.get_string_index("title", 0)
+                if exists and title.strip():
+                    return title
+        return GLib.path_get_basename(self.filepath.get_path())
 
     @property
     def uri(self):
-        return self.filepath
+        return self.filepath.get_uri()
 
     def __on_bus_eos(self, *args):
         """End of stream handler."""
