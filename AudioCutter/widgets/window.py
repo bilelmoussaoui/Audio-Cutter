@@ -27,6 +27,7 @@ from .audio_graph import AudioGraph
 from ..modules import Logger, Player, Settings, Exporter
 from ..const import AUDIO_MIMES
 from ..utils import show_app_menu
+from .loading import Loading
 
 from gi import require_version
 require_version("Gtk", "3.0")
@@ -88,8 +89,9 @@ class Window(Gtk.ApplicationWindow):
         notification = Notification.get_default()
         self._main.pack_start(notification, False, False, 0)
 
-
         # Audio Graph
+        self.main_stack = Gtk.Stack()
+
         self.audio_graph_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.audio_graph_box.get_style_context().add_class("audio-graph-container")
         self.zoombox = ZoomBox()
@@ -97,9 +99,11 @@ class Window(Gtk.ApplicationWindow):
         overlay = Gtk.Overlay()
         overlay.add(self.audio_graph_box)
         overlay.add_overlay(self.zoombox)
+        self.main_stack.add_named(overlay, "wave")
 
-        self._main.pack_start(overlay, True, True, 0)
-
+        loading = Loading()
+        self.main_stack.add_named(loading, "loading")
+        self._main.pack_start(self.main_stack, True, True, 0)
 
         # Config Box
         sound_config = SoundConfig.get_default()
@@ -149,7 +153,9 @@ class Window(Gtk.ApplicationWindow):
         """Set a filename as opened."""
         player = Player.get_default()
         soundconfig = SoundConfig.get_default()
-
+        self.main_stack.set_visible_child_name("loading")
+        loading = self.main_stack.get_child_by_name("loading")
+        loading.start()
         player.set_open_file(f)
         HeaderBar.get_default().set_audio_title(player.title)
         ActionBar.get_default().set_state(True)
@@ -161,9 +167,14 @@ class Window(Gtk.ApplicationWindow):
         for child in self.audio_graph_box.get_children():
             self.audio_graph_box.remove(child)
         self.audio_graph_box.pack_start(audio_graph, True, True, 0)
-        audio_graph.set_visible(True)
+        audio_graph.connect("draw-done", self._on_waveform_ready)
         self.zoombox.zoom_up.connect("clicked", audio_graph.zoomIn)
         self.zoombox.zoom_down.connect("clicked", audio_graph.zoomOut)
+
+    def _on_waveform_ready(self, *args):
+        loading = self.main_stack.get_child_by_name("loading")
+        loading.stop()
+        self.main_stack.set_visible_child_name("wave")
 
     def _on_duration_changed(self, *args):
         sound_config = SoundConfig.get_default()

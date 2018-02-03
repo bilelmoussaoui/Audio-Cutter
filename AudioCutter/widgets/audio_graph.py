@@ -280,7 +280,12 @@ Gst.Element.register(None, "waveformbin", Gst.Rank.NONE, WaveformPreviewer)
 class AudioGraph(Gtk.Layout, Zoomable):
     """The graph of the audio."""
 
+    __gsignals__ = {
+        'draw-done': (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
+
     def __init__(self, uri, asset):
+        GObject.GObject.__init__(self)
         Gtk.Layout.__init__(self)
         Zoomable.__init__(self)
 
@@ -300,6 +305,10 @@ class AudioGraph(Gtk.Layout, Zoomable):
         self._start_levels_discovery()
         self.connect("notify::height-request", self._height_changed_cb)
         self.show_all()
+
+
+    def emit(self, *args):
+        GLib.idle_add(GObject.GObject.emit, self, *args)
 
     def _launch_pipeline(self):
         self.pipeline = Gst.parse_launch("uridecodebin name=decode uri=" +
@@ -369,15 +378,12 @@ class AudioGraph(Gtk.Layout, Zoomable):
         self.n_samples = len(self.samples)
         self.discovered = True
         self.queue_draw()
-
-    def _emit_done_on_idle(self):
-        self.emit("done")
+        self.emit("draw-done")
 
     def start_generation(self):
         self._start_levels_discovery()
         if not self.pipeline:
             # No need to generate as we loaded pre-generated .wave file.
-            GLib.idle_add(self._emit_done_on_idle, priority=GLib.PRIORITY_LOW)
             return
         self.pipeline.set_state(Gst.State.PLAYING)
 
@@ -386,7 +392,6 @@ class AudioGraph(Gtk.Layout, Zoomable):
             self.pipeline.set_state(Gst.State.NULL)
             self.__disconnect_bus()
             self.pipeline = None
-
 
     def zoomChanged(self):
         self._force_redraw = True
@@ -426,6 +431,7 @@ class AudioGraph(Gtk.Layout, Zoomable):
 
     def _get_num_inpoint_samples(self):
         asset_duration = self._asset.get_duration()
+        # TODO: replace 1 with in-points
         return int(self.n_samples / (float(asset_duration)) / 1)
 
     def _start_levels_discovery(self, *args):

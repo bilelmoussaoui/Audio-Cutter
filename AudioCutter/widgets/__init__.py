@@ -29,3 +29,4 @@ from .settings import SettingsWindow
 from .time import TimeButton
 from .audio_graph import AudioGraph
 from .zoombox import ZoomBox
+from .loading import Loading
