@@ -41,12 +41,19 @@ gst_dep = dependency('gstreamer-1.0', version : '>= 1.12')
 cairo_dep = dependency('cairo')
 pycairo_dep = dependency('py3cairo')
 
-shared_library('renderer',
-    'AudioCutter/objects/renderer.c',
-    dependencies: [gst_dep, python_dep, pycairo_dep, cairo_dep],
-    name_prefix : '',
-    install: true,
-    install_dir: get_option('libdir') + '/AudioCutter/python')
+shared_library(
+  'renderer',
+  'AudioCutter/objects/renderer.c',
+  dependencies: [
+    gst_dep, 
+    python_dep, 
+    pycairo_dep, 
+    cairo_dep
+  ],
+  name_prefix : '',
+  install: true,
+  install_dir: join_paths(get_option('libdir') + '/AudioCutter/python')
+)
 
 
 install_subdir(
@@ -61,4 +68,4 @@ configure_file(
   install_dir: BIN_DIR
 )
 
-meson.add_install_script('build/meson_post_install.py')
+meson.add_install_script('build-aux/meson/meson_post_install.py')
