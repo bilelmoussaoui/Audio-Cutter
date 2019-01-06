@@ -1,10 +1,10 @@
-project('AudioCutter', 'c',
+project('com.github.bilelmoussaoui.AudioCutter', 'c',
   version: '0.1',
-  meson_version: '>= 0.40',
+  meson_version: '>= 0.48',
   license: 'GPL-3.0',
   default_options: ['prefix=/usr']
 )
-project_id = 'com.github.bilelmoussaoui.AudioCutter'
+application_id = 'com.github.bilelmoussaoui.AudioCutter'
 
 i18n   = import('i18n')
 python = import('python3')
