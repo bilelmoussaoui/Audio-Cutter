@@ -1,18 +1,19 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
     <id>com.github.bilelmoussaoui.AudioCutter</id>
-    <licence>GPL3</licence>
+    <metadata_license>CC0</metadata_license>
+    <project_license>GPL-3.0+</project_license>
     <name>Audio Cutter</name>
     <summary>Audio Cutter</summary>
     <description>
         <p>Simple Gtk Application to cut your audio files easily. Following GNOME design guildlines</p>
     </description>
-    <screenshots>
-   </screenshots>
-   <translation type="gettext">com.github.bilelmoussaoui.AudioCutter</translation>
-   <launchable type="desktop-id">com.github.bilelmoussaoui.AudioCutter.desktop</launchable>
+    <translation type="gettext">com.github.bilelmoussaoui.AudioCutter</translation>
+    <launchable type="desktop-id">com.github.bilelmoussaoui.AudioCutter.desktop</launchable>
     <url type="homepage">https://github.com/bilelmoussaoui/Audio-Cutter</url>
     <url type="bugtracker">https://github.com/bilelmoussaoui/Audio-Cutter/issues</url>
-    <update_contact>bil.elmoussaoui@gmail.com</update_contact>
+    <url type="donation">https://www.paypal.me/BilalELMoussaoui</url>
     <developer_name>Bilal Elmoussaoui</developer_name>
+    <update_contact>bil.elmoussaoui@gmail.com</update_contact>
+    <content_rating type="oars-1.0" />
 </component>
