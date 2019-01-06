@@ -61,8 +61,6 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         menu_icn = Gio.ThemedIcon(name="open-menu-symbolic")
         menu_img = Gtk.Image.new_from_gicon(menu_icn, Gtk.IconSize.BUTTON)
         self.menu_btn.set_image(menu_img)
-        self.menu_btn.set_visible(False)
-        self.menu_btn.set_no_show_all(True)
         self.pack_end(self.menu_btn)
 
         # Play Button

@@ -7,5 +7,5 @@ Exec=audio-cutter
 Terminal=false
 Categories=GNOME;GTK;Audio;
 Keywords=Gnome;GTK;Audio;Cutter;
-Icon=org.gnome.AudioCutter
+Icon=com.github.bilelmoussaoui.AudioCutter
 StartupNotify=true

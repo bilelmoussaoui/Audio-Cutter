@@ -26,7 +26,6 @@ from .notification import Notification
 from .audio_graph import AudioGraph
 from ..modules import Logger, Player, Settings, Exporter
 from ..const import AUDIO_MIMES
-from ..utils import show_app_menu
 from .loading import Loading
 
 from gi import require_version
@@ -69,15 +68,11 @@ class Window(Gtk.ApplicationWindow):
         headerbar.connect("open-file", self._open_file)
         headerbar.play_btn.connect("clicked", self._play)
         # Set up the app menu in other DE than GNOME
-        if not show_app_menu():
-            from ..application import Application
-            app_menu = Application.get_default().app_menu
-            menu_btn = headerbar.menu_btn
-            menu_btn.set_visible(True)
-            menu_btn.set_no_show_all(False)
-            popover = Gtk.Popover.new_from_model(menu_btn, app_menu)
-            menu_btn.connect("clicked", self._toggle_popover,
-                             popover)
+        from ..application import Application
+        app_menu = Application.get_default().app_menu
+        menu_btn = headerbar.menu_btn
+        popover = Gtk.Popover.new_from_model(menu_btn, app_menu)
+        menu_btn.connect("clicked", self._toggle_popover, popover)
         self.set_titlebar(headerbar)
 
         # Action Bar
@@ -124,7 +119,7 @@ class Window(Gtk.ApplicationWindow):
 
     def _open_file(self, *args):
         """Open an open file dialog to select an audio file."""
-        dialog = Gtk.FileChooserDialog(title=_("Please choose an audio file"),
+        dialog = Gtk.FileChooserNative(title=_("Please choose an audio file"),
                                        action=Gtk.FileChooserAction.OPEN)
         dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
         dialog.add_button(_("Open"), Gtk.ResponseType.OK)
@@ -183,7 +178,7 @@ class Window(Gtk.ApplicationWindow):
     def _on_export(self, action_bar, audio_format):
         sound_config = SoundConfig.get_default()
         is_fade_in = sound_config.is_fade_in
-        is_fade_out = sound_config.is_fade_out 
+        is_fade_out = sound_config.is_fade_out
         start_time = sound_config.start_time.time.total
         end_time = sound_config.end_time.time.total
         audio_path = Player.get_default().uri

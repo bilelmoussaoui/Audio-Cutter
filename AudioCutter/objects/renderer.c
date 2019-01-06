@@ -4,7 +4,6 @@
 #include <py3cairo.h>
 #include <gst/gst.h>
 
-static Pycairo_CAPI_t *Pycairo_CAPI;
 static GObjectClass * gobject_class;
 
 /*
@@ -37,8 +36,8 @@ py_fill_surface (PyObject * self, PyObject * args)
 
   ctx = cairo_create (surface);
 
-  cairo_set_source_rgb (ctx, 0.52, 0.53, 0.51);
-  cairo_set_line_width (ctx, 0.5);
+  cairo_set_source_rgb (ctx, 0.2, 0.56, 0.88);
+  cairo_set_line_width (ctx, 0.2);
   cairo_move_to (ctx, 0, height);
 
   pixelsPerSample = width / (float) length;

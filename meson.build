@@ -4,7 +4,7 @@ project('AudioCutter', 'c',
   license: 'GPL-3.0',
   default_options: ['prefix=/usr']
 )
-project_id = 'org.gnome.AudioCutter'
+project_id = 'com.github.bilelmoussaoui.AudioCutter'
 
 i18n   = import('i18n')
 python = import('python3')
@@ -45,9 +45,9 @@ shared_library(
   'renderer',
   'AudioCutter/objects/renderer.c',
   dependencies: [
-    gst_dep, 
-    python_dep, 
-    pycairo_dep, 
+    gst_dep,
+    python_dep,
+    pycairo_dep,
     cairo_dep
   ],
   name_prefix : '',

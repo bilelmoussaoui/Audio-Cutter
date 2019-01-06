@@ -107,6 +107,7 @@ class SoundConfig(Gtk.Box):
         for label, widget in list_:
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                           spacing=6)
+            widget.set_valign(Gtk.Align.CENTER)
             label_ = Gtk.Label(label=label)
             label_.get_style_context().add_class("config-list-box-label")
             box.pack_start(label_, False, False, 12)

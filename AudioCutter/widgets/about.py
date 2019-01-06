@@ -34,7 +34,7 @@ class AboutDialog(Gtk.AboutDialog):
         """Setup the about dialog widget."""
         self.set_authors(["Bilal Elmoussaoui"])
         self.set_artists(["Alfredo Hernández"])
-        self.set_logo_icon_name("org.gnome.AudioCutter")
+        self.set_logo_icon_name("com.github.bilelmoussaoui.AudioCutter")
         self.set_license_type(Gtk.License.GPL_3_0)
         self.set_program_name(_("Audio Cutter"))
         self.set_translator_credits(_("translator-credits"))
