@@ -29,7 +29,7 @@ class Settings(Gio.Settings):
 
     def new():
         """Create a new instance of Gio.Settings."""
-        gsettings = Gio.Settings.new("org.gnome.AudioCutter")
+        gsettings = Gio.Settings.new("com.github.bilelmoussaoui.Authenticator")
         gsettings.__class__ = Settings
         return gsettings
 

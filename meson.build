@@ -31,6 +31,7 @@ conf.set('PYTHON_DIR', PYTHON_DIR)
 conf.set('VERSION', meson.project_version())
 conf.set('PROJECT_NAME', meson.project_name())
 conf.set('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
+
 subdir('data')
 subdir('po')
 
