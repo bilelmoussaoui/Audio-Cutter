@@ -57,7 +57,7 @@ shared_library(
 
 
 install_subdir(
-  meson.project_name(),
+  'AudioCutter',
   install_dir: PYTHON_DIR
 )
 
