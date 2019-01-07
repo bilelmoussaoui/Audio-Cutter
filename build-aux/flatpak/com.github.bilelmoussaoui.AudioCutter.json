@@ -116,8 +116,7 @@
             "buildsystem": "meson",
             "sources": [{
                 "type": "git",
-                "url": "https://github.com/bilelmoussaoui/Audio-Cutter.git",
-                "branch": "wip"
+                "url": "https://github.com/bilelmoussaoui/Audio-Cutter.git"
             }]
         }
     ]
