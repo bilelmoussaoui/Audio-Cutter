@@ -122,8 +122,8 @@ class Window(Gtk.ApplicationWindow):
         file_chooser = Gtk.FileChooserNative()
         file_chooser.set_action(Gtk.FileChooserAction.OPEN)
         file_chooser.set_transient_for(self)
-        file_chooser.add_button( _("Open"), Gtk.ResponseType.ACCEPT)
-        file_chooser.add_button(_("Cancel"), Gtk.ResponseType.CLOSE)
+        file_chooser.set_accept_label(_("Open"))
+        file_chooser.set_cancel_label(_("Cancel"))
         Window._add_filters(file_chooser)
         response = file_chooser.run()
         uri = None
