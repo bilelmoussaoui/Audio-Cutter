@@ -1,0 +1,124 @@
+{
+    "app-id": "com.github.bilelmoussaoui.AudioCutter",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "3.30",
+    "sdk": "org.gnome.Sdk",
+    "command": "audio-cutter",
+    "cleanup": [
+        "/include",
+        "/lib/pkgconfig",
+        "/share/pkgconfig",
+        "/share/aclocal",
+        "/man",
+        "/share/man",
+        "/share/gtk-doc",
+        "/share/vala",
+        "*.la",
+        "*.a"
+    ],
+    "finish-args": [
+        /* X11 + XShm */
+        "--share=ipc", "--socket=x11",
+        /* Wayland */
+        "--socket=wayland",
+        "--socket=pulseaudio",
+        "--env=GST_PLUGIN_PATH=/app/lib/codecs/lib/gstreamer-1.0",
+        /* dconf */
+        "--filesystem=xdg-run/dconf", "--filesystem=~/.config/dconf:ro",
+        "--talk-name=ca.desrt.dconf", "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+    ],
+    "modules": [{
+            "name": "numpy",
+            "buildsystem": "simple",
+            "ensure-writable": [
+                "easy-install.pth"
+            ],
+            "build-commands": [
+                "mkdir -p /app/lib/python3.7/site-packages",
+                "CFLAGS='-L/usr/lib -Lbuild/temp.linux-x86_64-3.4 -I/usr/include -I/usr/include/python3.7m/' CXX=/usr/bin/g++ CC=/usr/bin/gcc PYTHONUSERBASE=/app/ python3 setup.py install --prefix=/app"
+            ],
+            "sources": [{
+                "type": "archive",
+                "url": "https://files.pythonhosted.org/packages/d5/6e/f00492653d0fdf6497a181a1c1d46bbea5a2383e7faf4c8ca6d6f3d2581d/numpy-1.14.5.zip",
+                "sha256": "a4a433b3a264dbc9aa9c7c241e87c0358a503ea6394f8737df1683c7c9a102ac"
+            }]
+        },
+        {
+            "name": "gstreamer",
+            "buildsystem": "meson",
+            "builddir": true,
+            "config-opts": [
+                "-Ddisable_gtkdoc=true"
+            ],
+            "sources": [{
+                "type": "git",
+                "branch": "1.14.2",
+                "url": "git://anongit.freedesktop.org/gstreamer/gstreamer",
+                "commit": "afb3d1b3e0d02da8b0eb5bb501356650b38e5644"
+            }]
+        },
+        {
+            "name": "gst-plugins-base",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Ddisable_gtkdoc=true"
+            ],
+            "builddir": true,
+            "sources": [{
+                "type": "git",
+                "branch": "1.14.2",
+                "url": "git://anongit.freedesktop.org/gstreamer/gst-plugins-base",
+                "commit": "24f097564657bd630e68931c932ec9fd992a3785"
+            }]
+        },
+        {
+            "name": "gst-editing-services",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Ddisable_gtkdoc=true"
+            ],
+            "sources": [{
+                "type": "git",
+                "branch": "1.14.2",
+                "url": "git://anongit.freedesktop.org/gstreamer/gst-editing-services",
+                "commit": "143f9d546ede487042b73e6c4801a80b5bb61abe"
+            }]
+        },
+        {
+            "name": "gst-python",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dpygi-overrides-dir=/app/lib/python3.7/site-packages/gi/overrides/"
+            ],
+            "sources": [{
+                "type": "git",
+                "branch": "1.14.2",
+                "url": "git://anongit.freedesktop.org/gstreamer/gst-python",
+                "commit": "75ac38f1282a18a5659bee487b58e3bac1a128c9"
+            }]
+        },        {
+            "name" : "gst-transcoder",
+            "buildsystem" : "meson",
+            "config-opts" : [
+                "-Ddisable_doc=true"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "branch" : "1.14.1",
+                    "url" : "https://github.com/pitivi/gst-transcoder",
+                    "commit" : "65f481dc2bab9358481918363bab9bb17afd7232"
+                }
+            ]
+        },
+        {
+            "name": "audio-cutter",
+            "buildsystem": "meson",
+            "sources": [{
+                "type": "git",
+                "url": "https://github.com/bilelmoussaoui/Audio-Cutter.git",
+                "branch": "wip"
+            }]
+        }
+    ]
+}

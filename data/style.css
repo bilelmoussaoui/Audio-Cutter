@@ -10,3 +10,12 @@
 .config-list-box:last-child {
     border-bottom: 1px solid @row_border_color;
 }
+
+.entry-error {
+    color: red;
+}
+
+.audio-graph-container {
+    background-color: shade(@theme_bg_color, 0.95);
+    border-bottom: 1px @row_border_color solid;
+}

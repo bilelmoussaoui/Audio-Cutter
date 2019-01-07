@@ -3,8 +3,6 @@ Your favorite Audio Cutter.
 Author : Bilal Elmoussaoui (bil.elmoussaoui@gmail.com)
 Artist : Alfredo Hernández
 Website : https://github.com/bil-elmoussaoui/Audio-Cutter
-Licence : The script is released under GPL, uses a modified script
-     form Chromium project released under BSD license
 This file is part of AudioCutter.
 AudioCutter is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published
@@ -63,8 +61,6 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         menu_icn = Gio.ThemedIcon(name="open-menu-symbolic")
         menu_img = Gtk.Image.new_from_gicon(menu_icn, Gtk.IconSize.BUTTON)
         self.menu_btn.set_image(menu_img)
-        self.menu_btn.set_visible(False)
-        self.menu_btn.set_no_show_all(True)
         self.pack_end(self.menu_btn)
 
         # Play Button
@@ -76,13 +72,13 @@ class HeaderBar(Gtk.HeaderBar, GObject.GObject):
         """Send a open-file signal to the Main Window."""
         self.emit("open-file")
 
-    def set_open_file(self, filename):
+    def set_audio_title(self, title):
         """
         Set a filename as open.
         Change the subtitle to the filename.
         Also makes the play button sensitive
         """
-        self.set_subtitle(filename)
+        self.set_subtitle(title)
         self.play_btn.set_sensitive(True)
         self.set_has_subtitle(True)
 

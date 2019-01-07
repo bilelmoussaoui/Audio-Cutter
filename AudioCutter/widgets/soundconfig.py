@@ -3,8 +3,6 @@ Your favorite Audio Cutter.
 Author : Bilal Elmoussaoui (bil.elmoussaoui@gmail.com)
 Artist : Alfredo Hernández
 Website : https://github.com/bil-elmoussaoui/Audio-Cutter
-Licence : The script is released under GPL, uses a modified script
-     form Chromium project released under BSD license
 This file is part of AudioCutter.
 AudioCutter is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published
@@ -20,6 +18,7 @@ along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 from gettext import gettext as _
 
 from .time import TimeButton
+from ..utils import format_ns
 
 from gi import require_version
 require_version("Gtk", "3.0")
@@ -49,6 +48,22 @@ class SoundConfig(Gtk.Box):
         if SoundConfig.instance is None:
             SoundConfig.instance = SoundConfig()
         return SoundConfig.instance
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @property
+    def is_fade_in(self):
+        return self._fade_in.get_active()
+
+    @property
+    def is_fade_out(self):
+        return self._fade_out.get_active()
 
     def _setup_widgets(self):
         """Setup the main SoundConfig widgets."""
@@ -92,7 +107,8 @@ class SoundConfig(Gtk.Box):
         for label, widget in list_:
             box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                           spacing=6)
-            label_ = Gtk.Label(label)
+            widget.set_valign(Gtk.Align.CENTER)
+            label_ = Gtk.Label(label=label)
             label_.get_style_context().add_class("config-list-box-label")
             box.pack_start(label_, False, False, 12)
             box.pack_end(widget, False, False, 12)
@@ -113,6 +129,7 @@ class SoundConfig(Gtk.Box):
 
     def set_duration(self, duration):
         """Set the max duration."""
-        self._start_time.duration = duration
-        self._end_time.duration = duration
-        self._end_time.time = duration
+        time_obj = format_ns(duration)
+        self._start_time.duration = time_obj
+        self._end_time.duration = time_obj
+        self._end_time.time = time_obj

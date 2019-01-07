@@ -3,8 +3,6 @@ Your favorite Audio Cutter.
 Author : Bilal Elmoussaoui (bil.elmoussaoui@gmail.com)
 Artist : Alfredo Hernández
 Website : https://github.com/bil-elmoussaoui/Audio-Cutter
-Licence : The script is released under GPL, uses a modified script
-     form Chromium project released under BSD license
 This file is part of AudioCutter.
 AudioCutter is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published
@@ -23,13 +21,16 @@ from gettext import gettext as _
 from .actionbar import ActionBar
 from .headerbar import HeaderBar
 from .soundconfig import SoundConfig
-from ..modules import Logger, Player, Settings
+from .zoombox import ZoomBox
+from .notification import Notification
+from .audio_graph import AudioGraph
+from ..modules import Logger, Player, Settings, Exporter
 from ..const import AUDIO_MIMES
-from ..utils import show_app_menu
+from .loading import Loading
 
 from gi import require_version
 require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, Gio
 
 
 class Window(Gtk.ApplicationWindow):
@@ -45,6 +46,7 @@ class Window(Gtk.ApplicationWindow):
         self._restore_state()
         Player.get_default().connect("playing", self._on_play)
         Player.get_default().connect("paused", self._on_paused)
+        Player.get_default().connect("duration-changed", self._on_duration_changed)
 
     @staticmethod
     def get_default():
@@ -66,22 +68,37 @@ class Window(Gtk.ApplicationWindow):
         headerbar.connect("open-file", self._open_file)
         headerbar.play_btn.connect("clicked", self._play)
         # Set up the app menu in other DE than GNOME
-        if not show_app_menu():
-            from ..application import Application
-            app_menu = Application.get_default().app_menu
-            menu_btn = headerbar.menu_btn
-            menu_btn.set_visible(True)
-            menu_btn.set_no_show_all(False)
-            popover = Gtk.Popover.new_from_model(menu_btn, app_menu)
-            menu_btn.connect("clicked", self._toggle_popover,
-                             popover)
+        from ..application import Application
+        app_menu = Application.get_default().app_menu
+        menu_btn = headerbar.menu_btn
+        popover = Gtk.Popover.new_from_model(menu_btn, app_menu)
+        menu_btn.connect("clicked", self._toggle_popover, popover)
         self.set_titlebar(headerbar)
 
         # Action Bar
         actionbar = ActionBar.get_default()
+        actionbar.connect("selected-format", self._on_export)
         self._main.pack_end(actionbar, False, False, 0)
 
-        # Audio Graph.
+        # Notification
+        notification = Notification.get_default()
+        self._main.pack_start(notification, False, False, 0)
+
+        # Audio Graph
+        self.main_stack = Gtk.Stack()
+
+        self.audio_graph_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.audio_graph_box.get_style_context().add_class("audio-graph-container")
+        self.zoombox = ZoomBox()
+
+        overlay = Gtk.Overlay()
+        overlay.add(self.audio_graph_box)
+        overlay.add_overlay(self.zoombox)
+        self.main_stack.add_named(overlay, "wave")
+
+        loading = Loading()
+        self.main_stack.add_named(loading, "loading")
+        self._main.pack_start(self.main_stack, True, True, 0)
 
         # Config Box
         sound_config = SoundConfig.get_default()
@@ -102,19 +119,22 @@ class Window(Gtk.ApplicationWindow):
 
     def _open_file(self, *args):
         """Open an open file dialog to select an audio file."""
-        dialog = Gtk.FileChooserDialog(_("Please choose an audio file"),
-                                       self, Gtk.FileChooserAction.OPEN,
-                                       ("_Cancel", Gtk.ResponseType.CANCEL,
-                                        "_Open", Gtk.ResponseType.OK))
-        Window._add_filters(dialog)
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            opened_file = dialog.get_filename()
-            Window._set_open_file(opened_file)
-            Logger.debug("File Selected {}".format(opened_file))
+        file_chooser = Gtk.FileChooserNative()
+        file_chooser.set_action(Gtk.FileChooserAction.OPEN)
+        file_chooser.set_transient_for(self)
+        file_chooser.set_accept_label(_("Open"))
+        file_chooser.set_cancel_label(_("Cancel"))
+        Window._add_filters(file_chooser)
+        response = file_chooser.run()
+        uri = None
+        if response == Gtk.ResponseType.ACCEPT:
+            uri = file_chooser.get_uri()
+        file_chooser.destroy()
+        if uri:
+            self._set_open_file(Gio.File.new_for_uri(uri))
+            Logger.debug("File Selected {}".format(uri))
         else:
             Logger.debug("Open file dialog closed without selecting a file.")
-        dialog.destroy()
 
     @staticmethod
     def _add_filters(dialog):
@@ -125,18 +145,49 @@ class Window(Gtk.ApplicationWindow):
             filters.add_mime_type(mimetype)
         dialog.add_filter(filters)
 
-    @staticmethod
-    def _set_open_file(filepath):
+    def _set_open_file(self, f):
         """Set a filename as opened."""
         player = Player.get_default()
         soundconfig = SoundConfig.get_default()
-
-        player.set_open_file(filepath)
-        HeaderBar.get_default().set_open_file(filepath)
+        self.main_stack.set_visible_child_name("loading")
+        loading = self.main_stack.get_child_by_name("loading")
+        loading.start()
+        player.set_open_file(f)
+        HeaderBar.get_default().set_audio_title(player.title)
         ActionBar.get_default().set_state(True)
         soundconfig.set_state(True)
         soundconfig.set_duration(player.duration)
-        Settings.get_default().last_file = filepath
+        Settings.get_default().last_file = f.get_uri()
+
+        audio_graph = AudioGraph(f.get_uri(), player.asset)
+        for child in self.audio_graph_box.get_children():
+            self.audio_graph_box.remove(child)
+        self.audio_graph_box.pack_start(audio_graph, True, True, 0)
+        audio_graph.connect("draw-done", self._on_waveform_ready)
+        self.zoombox.zoom_up.connect("clicked", audio_graph.zoomIn)
+        self.zoombox.zoom_down.connect("clicked", audio_graph.zoomOut)
+
+    def _on_waveform_ready(self, *args):
+        loading = self.main_stack.get_child_by_name("loading")
+        loading.stop()
+        self.main_stack.set_visible_child_name("wave")
+
+    def _on_duration_changed(self, *args):
+        sound_config = SoundConfig.get_default()
+        sound_config.start_time.step_up()
+
+    def _on_export(self, action_bar, audio_format):
+        sound_config = SoundConfig.get_default()
+        is_fade_in = sound_config.is_fade_in
+        is_fade_out = sound_config.is_fade_out
+        start_time = sound_config.start_time.time.total
+        end_time = sound_config.end_time.time.total
+        audio_path = Player.get_default().uri
+        exporter = Exporter(start_time=start_time, end_time=end_time,
+                            is_fade_in=is_fade_in, is_fade_out=is_fade_out,
+                            path=audio_path, audio_format=audio_format)
+        exporter.do()
+
 
     def _toggle_popover(self, button, popover):
         """Toggle the app menu popover."""
@@ -155,8 +206,8 @@ class Window(Gtk.ApplicationWindow):
         else:
             self.set_position(Gtk.WindowPosition.CENTER)
 
-        last_file = settings.last_file
-        if last_file and path.exists(last_file):
+        last_file = Gio.File.new_for_uri(settings.last_file)
+        if last_file and last_file.query_exists():
             self._set_open_file(last_file)
 
     def _on_close(self):

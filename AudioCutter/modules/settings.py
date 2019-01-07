@@ -3,8 +3,6 @@ Your favorite Audio Cutter.
 Author : Bilal Elmoussaoui (bil.elmoussaoui@gmail.com)
 Artist : Alfredo Hernández
 Website : https://github.com/bil-elmoussaoui/Audio-Cutter
-Licence : The script is released under GPL, uses a modified script
-     form Chromium project released under BSD license
 This file is part of AudioCutter.
 AudioCutter is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published
@@ -31,7 +29,7 @@ class Settings(Gio.Settings):
 
     def new():
         """Create a new instance of Gio.Settings."""
-        gsettings = Gio.Settings.new("org.gnome.AudioCutter")
+        gsettings = Gio.Settings.new("com.github.bilelmoussaoui.AudioCutter")
         gsettings.__class__ = Settings
         return gsettings
 

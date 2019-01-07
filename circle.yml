@@ -18,4 +18,5 @@ jobs:
       - run: pip3 install pycodestyle
       - run: python3 ./tests/test_code_format.py
       - run: meson builddir
+      - run: ninja -C builddir test
       - run: ninja -C builddir install

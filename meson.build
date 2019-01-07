@@ -1,10 +1,10 @@
-project('AudioCutter',
+project('com.github.bilelmoussaoui.AudioCutter', 'c',
   version: '0.1',
-  meson_version: '>= 0.40',
+  meson_version: '>= 0.48',
   license: 'GPL-3.0',
   default_options: ['prefix=/usr']
 )
-project_id = 'org.gnome.AudioCutter'
+application_id = 'com.github.bilelmoussaoui.AudioCutter'
 
 i18n   = import('i18n')
 python = import('python3')
@@ -30,13 +30,35 @@ conf.set('LOCALE_DIR', LOCALE_DIR)
 conf.set('PYTHON_DIR', PYTHON_DIR)
 conf.set('VERSION', meson.project_version())
 conf.set('PROJECT_NAME', meson.project_name())
+conf.set('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 
 subdir('data')
 subdir('po')
 
 
+
+python_dep = dependency('python3', version : '>= 3.3')
+gst_dep = dependency('gstreamer-1.0', version : '>= 1.12')
+cairo_dep = dependency('cairo')
+pycairo_dep = dependency('py3cairo')
+
+shared_library(
+  'renderer',
+  'AudioCutter/objects/renderer.c',
+  dependencies: [
+    gst_dep,
+    python_dep,
+    pycairo_dep,
+    cairo_dep
+  ],
+  name_prefix : '',
+  install: true,
+  install_dir: join_paths(get_option('libdir') + '/AudioCutter/python')
+)
+
+
 install_subdir(
-  meson.project_name(),
+  'AudioCutter',
   install_dir: PYTHON_DIR
 )
 
@@ -47,4 +69,4 @@ configure_file(
   install_dir: BIN_DIR
 )
 
-meson.add_install_script('build/meson_post_install.py')
+meson.add_install_script('build-aux/meson/meson_post_install.py')
