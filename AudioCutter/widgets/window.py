@@ -119,21 +119,22 @@ class Window(Gtk.ApplicationWindow):
 
     def _open_file(self, *args):
         """Open an open file dialog to select an audio file."""
-        dialog = Gtk.FileChooserNative(title=_("Please choose an audio file"),
-                                       action=Gtk.FileChooserAction.OPEN)
-        dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
-        dialog.add_button(_("Open"), Gtk.ResponseType.OK)
-        dialog.set_transient_for(self)
-
-        Window._add_filters(dialog)
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            opened_file = dialog.get_filename()
-            self._set_open_file(Gio.File.new_for_path(opened_file))
-            Logger.debug("File Selected {}".format(opened_file))
+        file_chooser = Gtk.FileChooserNative()
+        file_chooser.set_action(Gtk.FileChooserAction.OPEN)
+        file_chooser.set_transient_for(self)
+        file_chooser.add_button( _("Open"), Gtk.ResponseType.ACCEPT)
+        file_chooser.add_button(_("Cancel"), Gtk.ResponseType.CLOSE)
+        Window._add_filters(file_chooser)
+        response = file_chooser.run()
+        uri = None
+        if response == Gtk.ResponseType.ACCEPT:
+            uri = file_chooser.get_uri()
+        file_chooser.destroy()
+        if uri:
+            self._set_open_file(Gio.File.new_for_uri(uri))
+            Logger.debug("File Selected {}".format(uri))
         else:
             Logger.debug("Open file dialog closed without selecting a file.")
-        dialog.destroy()
 
     @staticmethod
     def _add_filters(dialog):
