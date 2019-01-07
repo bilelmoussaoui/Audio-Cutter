@@ -96,6 +96,20 @@
                 "url": "git://anongit.freedesktop.org/gstreamer/gst-python",
                 "commit": "75ac38f1282a18a5659bee487b58e3bac1a128c9"
             }]
+        },        {
+            "name" : "gst-transcoder",
+            "buildsystem" : "meson",
+            "config-opts" : [
+                "-Ddisable_doc=true"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "branch" : "1.14.1",
+                    "url" : "https://github.com/pitivi/gst-transcoder",
+                    "commit" : "65f481dc2bab9358481918363bab9bb17afd7232"
+                }
+            ]
         },
         {
             "name": "audio-cutter",
