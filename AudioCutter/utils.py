@@ -21,10 +21,6 @@ from os import path, makedirs
 from gi.repository import GLib
 
 
-def show_app_menu():
-    """Return if we should use the app_menu or use a popover."""
-    return "gnome" in GLib.getenv("XDG_CURRENT_DESKTOP").lower()
-
 def get_wavefile_location_for_uri(uri):
     filename = sha256(uri.encode("utf-8")).hexdigest()
     cachedir = path.join(GLib.get_user_cache_dir(), "AudioCutter")

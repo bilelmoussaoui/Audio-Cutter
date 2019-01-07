@@ -19,7 +19,6 @@ from gettext import gettext as _
 
 from .widgets import Window, AboutDialog, ShortuctsWindow, SettingsWindow
 from .modules import Logger, Settings
-from .utils import show_app_menu
 
 from gi import require_version
 require_version("Gtk", "3.0")
@@ -108,9 +107,6 @@ class Application(Gtk.Application):
         action = Gio.SimpleAction.new("quit", None)
         action.connect("activate", self._on_quit)
         self.add_action(action)
-        if show_app_menu():
-            self.set_app_menu(self.app_menu)
-            Logger.debug("Adding GNOME app menu")
 
     def _on_night_mode(self, action, *args):
         """Switch the night mode on/off."""

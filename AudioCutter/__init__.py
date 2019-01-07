@@ -20,4 +20,4 @@ from .application import Application
 from .widgets import HeaderBar, Window
 from .const import AUDIO_MIMES
 from .objects import Time
-from .utils import show_app_menu, format_ns
+from .utils import format_ns
