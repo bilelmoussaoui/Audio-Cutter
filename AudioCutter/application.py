@@ -17,7 +17,7 @@ along with AudioCutter. If not, see <http://www.gnu.org/licenses/>.
 """
 from gettext import gettext as _
 
-from .widgets import Window, AboutDialog, ShortuctsWindow, SettingsWindow
+from .widgets import Window, AboutDialog, ShortcutsWindow, SettingsWindow
 from .modules import Logger, Settings
 
 from gi import require_version
@@ -119,7 +119,7 @@ class Application(Gtk.Application):
 
     def _on_shortcuts(self, *args):
         """Shows keyboard shortcuts."""
-        shortcuts = ShortuctsWindow()
+        shortcuts = ShortcutsWindow()
         shortcuts.set_transient_for(Window.get_default())
         shortcuts.show()
 

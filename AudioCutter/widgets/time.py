@@ -124,11 +124,11 @@ class TimeButton(Gtk.Box):
             try:
                 hours, minutes, seconds = list(map(int, song_time))
                 if hours > 24:
-                    message = _("Hours should be < 24")
+                    message = _("Hours should be less than 24")
                 elif minutes > 60:
-                    message = _("Minutes must be < 60")
+                    message = _("Minutes must be less than 60")
                 elif seconds > 60:
-                    message = _("Seconds must be < 60")
+                    message = _("Seconds must be less than 60")
             except (TypeError, ValueError):
                 message = _("Invalid time format, please follow hh:mm:ss")
         else:
