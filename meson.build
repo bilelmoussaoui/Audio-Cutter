@@ -35,8 +35,6 @@ conf.set('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 subdir('data')
 subdir('po')
 
-
-
 python_dep = dependency('python3', version : '>= 3.3')
 gst_dep = dependency('gstreamer-1.0', version : '>= 1.12')
 cairo_dep = dependency('cairo')
@@ -55,7 +53,6 @@ shared_library(
   install: true,
   install_dir: join_paths(get_option('libdir') + '/AudioCutter/python')
 )
-
 
 install_subdir(
   'AudioCutter',

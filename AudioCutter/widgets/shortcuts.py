@@ -20,7 +20,7 @@ require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
-class ShortuctsWindow(Gtk.Window):
+class ShortcutsWindow(Gtk.ShortcutsWindow):
     """Shortcuts Window widget."""
 
     def __init__(self):

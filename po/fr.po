@@ -1,0 +1,137 @@
+# French translations for audiocutter package.
+# Copyright (C) 2019 THE audiocutter'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the audiocutter package.
+# Automatically generated, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: audiocutter\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-01-22 18:32+0100\n"
+"PO-Revision-Date: 2019-01-22 18:32+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: AudioCutter/application.py:38 AudioCutter/widgets/about.py:39
+#: AudioCutter/widgets/headerbar.py:43
+msgid "Audio Cutter"
+msgstr "Audio Cutter"
+
+#: AudioCutter/application.py:78
+msgid "Night Mode"
+msgstr "Mode nuit"
+
+#: AudioCutter/application.py:81
+msgid "Keyboard Shortcuts"
+msgstr "Raccourcis clavier"
+
+#: AudioCutter/application.py:84
+msgid "About Audio Cutter"
+msgstr "À propos d'Audio Cutter"
+
+#: AudioCutter/const.py:21
+msgid "OGG Audio"
+msgstr "Audio OGG"
+
+#: AudioCutter/const.py:22
+msgid "MIDI"
+msgstr "MIDI"
+
+#: AudioCutter/const.py:23
+msgid "Waveform Audio Format"
+msgstr "Audio Waveform (WAV)"
+
+#: AudioCutter/const.py:24
+msgid "AAC Audio"
+msgstr "Audio AAC"
+
+#: AudioCutter/const.py:25
+msgid "MP3 Audio"
+msgstr "Audio MP3"
+
+#: AudioCutter/const.py:26
+msgid "3GPP Audio Container"
+msgstr "Conteneur audio 3GPP"
+
+#: AudioCutter/const.py:27
+msgid "3GPP2 Audio Container"
+msgstr "Conteneur audio 3GPP2"
+
+#: AudioCutter/const.py:28
+msgid "WEBM Audio"
+msgstr "Audio Webm"
+
+#: AudioCutter/widgets/about.py:40
+msgid "translator-credits"
+msgstr "Romain F. T."
+
+#: AudioCutter/widgets/about.py:42
+msgid "Cut your audio files like no one does"
+msgstr "Découpez vos fichiers audio mieux que personne"
+
+#. Save Button
+#: AudioCutter/widgets/actionbar.py:52
+msgid "Save"
+msgstr "Enregistrer"
+
+#. Open button
+#: AudioCutter/widgets/headerbar.py:57 AudioCutter/widgets/window.py:125
+msgid "Open"
+msgstr "Ouvrir"
+
+#: AudioCutter/widgets/headerbar.py:88
+msgid "Play"
+msgstr "Lecture"
+
+#: AudioCutter/widgets/headerbar.py:91
+msgid "Pause"
+msgstr "Pause"
+
+#: AudioCutter/widgets/settings.py:58
+msgid "Settings"
+msgstr "Paramètres"
+
+#: AudioCutter/widgets/soundconfig.py:74
+msgid "Start time"
+msgstr "Temps de début"
+
+#: AudioCutter/widgets/soundconfig.py:75
+msgid "Fade in"
+msgstr "Fondu en ouverture"
+
+#: AudioCutter/widgets/soundconfig.py:82
+msgid "End time"
+msgstr "Temps de fin"
+
+#: AudioCutter/widgets/soundconfig.py:83
+msgid "Fade out"
+msgstr "Fondu en fermeture"
+
+#: AudioCutter/widgets/time.py:127
+msgid "Hours should be less than 24"
+msgstr "Les heures doivent être moins de 24"
+
+#: AudioCutter/widgets/time.py:129
+msgid "Minutes must be less than 60"
+msgstr "Les minutes doivent être moins de 60"
+
+#: AudioCutter/widgets/time.py:131
+msgid "Seconds must be less than 60"
+msgstr "Les secondes doivent être moins de 60"
+
+#: AudioCutter/widgets/time.py:133 AudioCutter/widgets/time.py:135
+msgid "Invalid time format, please follow hh:mm:ss"
+msgstr "Format de temps invalide, veuillez respecter hh:mm:ss"
+
+#: AudioCutter/widgets/window.py:126
+msgid "Cancel"
+msgstr "Annuler"
+
+#: AudioCutter/widgets/window.py:143
+msgid "Audio Files"
+msgstr "Fichiers audio"
